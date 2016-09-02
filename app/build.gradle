@@ -24,4 +24,6 @@ dependencies {
     testCompile 'junit:junit:4.12'
     compile 'com.android.support:appcompat-v7:24.2.0'
     compile 'com.android.support:design:24.2.0'
+    compile 'com.loopj.android:android-async-http:1.4.9'
+    compile 'com.fasterxml.jackson.core:jackson-annotations:2.8.2'
 }
