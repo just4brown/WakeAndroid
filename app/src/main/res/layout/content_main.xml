@@ -14,9 +14,9 @@
     android:background="@color/colorPrimary"
     android:id="@+id/main_layout">
 
-    <ListView
+    <android.support.v7.widget.RecyclerView
         android:id="@+id/alarms"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
 
 </RelativeLayout>

@@ -17,6 +17,8 @@ public class AlarmDto {
 
 	@JsonProperty("userID")
 	private Integer userID;
+	@JsonProperty("label")
+	private String label;
 	@JsonProperty("isSynchronized")
 	private Boolean isSynchronized;
 	@JsonProperty("isActive")
@@ -26,7 +28,7 @@ public class AlarmDto {
 	@JsonProperty("minute")
 	private Integer minute;
 	@JsonProperty("days")
-	private List<String> days = new ArrayList<String>();
+	private List<Integer> days = new ArrayList<Integer>();
 	@JsonProperty("audio")
 	private Integer audio;
 	@JsonProperty("duration")
@@ -62,8 +64,9 @@ public class AlarmDto {
 	 * @param allowSnooze
 	 * @param hour
 	 */
-	public AlarmDto(Integer userID, Boolean isSynchronized, Boolean isActive, Integer hour, Integer minute, List<String> days, Integer audio, Integer duration, Integer brightness, Integer volume, Boolean allowSnooze, String createdAt) {
+	public AlarmDto(Integer userID, String label, Boolean isSynchronized, Boolean isActive, Integer hour, Integer minute, List<Integer> days, Integer audio, Integer duration, Integer brightness, Integer volume, Boolean allowSnooze, String createdAt) {
 		this.userID = userID;
+		this.label = label;
 		this.isSynchronized = isSynchronized;
 		this.isActive = isActive;
 		this.hour = hour;
@@ -95,6 +98,26 @@ public class AlarmDto {
 	@JsonProperty("userID")
 	public void setUserID(Integer userID) {
 		this.userID = userID;
+	}
+
+	/**
+	 *
+	 * @return
+	 * The label
+	 */
+	@JsonProperty("label")
+	public String getLabel() {
+		return label;
+	}
+
+	/**
+	 *
+	 * @param label
+	 * The label
+	 */
+	@JsonProperty("label")
+	public void setLabel(String label) {
+		this.label = label;
 	}
 
 	/**
@@ -183,7 +206,7 @@ public class AlarmDto {
 	 * The days
 	 */
 	@JsonProperty("days")
-	public List<String> getDays() {
+	public List<Integer> getDays() {
 		return days;
 	}
 
@@ -193,7 +216,7 @@ public class AlarmDto {
 	 * The days
 	 */
 	@JsonProperty("days")
-	public void setDays(List<String> days) {
+	public void setDays(List<Integer> days) {
 		this.days = days;
 	}
 
