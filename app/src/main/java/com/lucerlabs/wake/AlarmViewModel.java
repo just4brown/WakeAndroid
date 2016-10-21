@@ -1,13 +1,11 @@
 package com.lucerlabs.wake;
 
+import android.app.AlertDialog;
 import android.app.TimePickerDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.databinding.BaseObservable;
 import android.databinding.Bindable;
-import android.databinding.DataBindingUtil;
-import android.databinding.Observable;
-import android.databinding.ObservableArrayList;
-import android.databinding.ObservableList;
 import android.graphics.Typeface;
 import android.text.Spannable;
 import android.text.SpannableString;
@@ -15,7 +13,6 @@ import android.text.format.DateFormat;
 import android.text.style.RelativeSizeSpan;
 import android.text.style.StyleSpan;
 import android.text.style.TypefaceSpan;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -23,20 +20,20 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
-
 import android.transition.TransitionManager;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TimePicker;
-
-import com.lucerlabs.wake.databinding.AlarmBinding;
+import android.widget.EditText;
 
 public class AlarmViewModel extends BaseObservable {
 	final Context mContext;
 	private CharSequence mFormat12;
 	private Alarm mAlarm;
 	private TimePickerDialog mTimePicker;
+	private AlertDialog mLabelEditorDialog;
 	private String mTime;
 	private Boolean mEnabled;
 	private Boolean mIsExpanded;
@@ -44,17 +41,34 @@ public class AlarmViewModel extends BaseObservable {
 	private View mAlarmDetails;
 	private LinearLayout mDaysContainer;
 	private String mDurationStatus;
+	private final TimePickerDialog.OnTimeSetListener timePickerListener = new TimePickerDialog.OnTimeSetListener() {
+		@Override
+		public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+			// what if mAlarm is null?
+			if (mAlarm != null) {
+				mAlarm.setHour(hourOfDay);
+				mAlarm.setMinute(minute);
+				notifyChange();
+				updateTime();
+			}
+		}
+	};
 
 	public AlarmViewModel(Context context) {
 		mContext = context;
 		mFormat12 = get12ModeFormat(0.001f /* amPmRatio */);
 		mTimePicker = new TimePickerDialog(mContext, timePickerListener, 9, 0, false);
+		initLabelEditorDialog(mContext);
 		mTime = "0:00";
 		mIsExpanded = false;
 	}
 
-	public void onClick() {
+	public void onTimeClick() {
 		mTimePicker.show();
+	}
+
+	public void onLabelClick() {
+		mLabelEditorDialog.show();
 	}
 
 	public boolean isExpanded() {
@@ -81,19 +95,6 @@ public class AlarmViewModel extends BaseObservable {
 	public void setDayContainer (LinearLayout layout) {
 		mDaysContainer = layout;
 	}
-
-	TimePickerDialog.OnTimeSetListener timePickerListener = new TimePickerDialog.OnTimeSetListener() {
-		@Override
-		public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-			// what if mAlarm is null?
-			if (mAlarm != null) {
-				mAlarm.setHour(hourOfDay);
-				mAlarm.setMinute(minute);
-				notifyChange();
-				updateTime();
-			}
-		}
-	};
 
 	public void setAlarm(Alarm alarm) {
 		mAlarm = alarm;
@@ -253,5 +254,33 @@ public class AlarmViewModel extends BaseObservable {
 			});
 			mDaysContainer.addView(d, dayButtonLayoutParams);
 		}
+	}
+
+	private void initLabelEditorDialog(Context context) {
+		AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(context);
+		LayoutInflater inflater = LayoutInflater.from(context);
+		View editorView = inflater.inflate(R.layout.label_edit_dialog, null);
+		dialogBuilder.setView(editorView);
+		final EditText input = (EditText) editorView.findViewById(R.id.input);
+
+
+		dialogBuilder
+			.setPositiveButton("OK",
+				new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int id) {
+						String currentText = input.getText().toString();
+						if (currentText.length() > 0) {
+							setLabel(currentText);
+						}
+					}
+				})
+			.setNegativeButton("Cancel",
+				new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int id) {
+						dialog.cancel();
+					}
+				});
+
+		mLabelEditorDialog = dialogBuilder.create();
 	}
 }

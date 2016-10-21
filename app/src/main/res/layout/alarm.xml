@@ -30,7 +30,7 @@
                 android:textColor="@color/clock_white"
                 android:textSize="@dimen/alarm_time_font_size"
                 android:text="@{alarm.time}"
-                android:onClick="@{() -> alarm.onClick()}"/>
+                android:onClick="@{() -> alarm.onTimeClick()}"/>
 
             <android.support.v7.widget.SwitchCompat
                 android:id="@+id/onoff"
@@ -55,7 +55,8 @@
                 android:fontFamily="sans-serif-thin"
                 android:textColor="@color/clock_white"
                 android:textSize="@dimen/label_font_size"
-                android:text="@{alarm.label}"/>
+                android:text="@{alarm.label}"
+                android:onClick="@{() -> alarm.onLabelClick()}"/>
 
             <ImageButton
                 android:id="@+id/expand_button"
