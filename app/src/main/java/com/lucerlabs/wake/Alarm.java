@@ -11,7 +11,7 @@ public class Alarm {
 	private Boolean enabled;
 	private Integer userID;
 	private Boolean isSynchronized;
-	private List<Integer> days;
+	private List<DayOfWeek> days;
 	private Integer audio;
 	private Integer duration;
 	private Integer brightness;
@@ -40,13 +40,13 @@ public class Alarm {
 		this.enabled = enabled;
 		this.userID = userID;
 		this.isSynchronized = isSynchronized;
-		this.days = days;
 		this.audio = audio;
 		this.duration = duration;
 		this.brightness = brightness;
 		this.volume = volume;
 		this.allowSnooze = allowSnooze;
 		this.createdAt = createdAt;
+		setDays(days);
 	}
 
 	public Alarm(String label, int hour, int minute, boolean enabled) {
@@ -55,7 +55,7 @@ public class Alarm {
 		this.minute = minute;
 		this.enabled = enabled;
 		this.isSynchronized = false;
-		this.days = Arrays.asList(1,2,3,4,5);
+		this.days = Arrays.asList(DayOfWeek.getDayOfWeek(1));
 		this.audio = 3;
 		this.duration = 5;
 		this.brightness = 9;
@@ -95,8 +95,16 @@ public class Alarm {
 		return isSynchronized;
 	}
 
-	public List<Integer> getDays() {
-		return days;
+	public List<Integer> getIntegerDays() {
+		List convertedDays = new ArrayList<Integer>();
+		for (DayOfWeek d : this.days) {
+			convertedDays.add(d.ordinal());
+		}
+		return convertedDays;
+	}
+
+	public List<DayOfWeek> getDays() {
+		return this.days;
 	}
 
 	public Integer getAudio() {
@@ -144,7 +152,20 @@ public class Alarm {
 	}
 
 	public void setDays(List<Integer> days) {
-		this.days = days;
+		this.days = new ArrayList<DayOfWeek>();
+		for (Integer day : days) {
+			this.days.add(DayOfWeek.getDayOfWeek(day));
+		}
+	}
+
+	public void addDay(DayOfWeek day) {
+		if (!this.days.contains(day)) {
+			this.days.add(day);
+		}
+	}
+
+	public void removeDay(DayOfWeek day) {
+		this.days.remove(day);
 	}
 
 	public void setAudio(Integer audio) {

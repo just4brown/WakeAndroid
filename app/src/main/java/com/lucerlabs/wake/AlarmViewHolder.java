@@ -1,10 +1,12 @@
 package com.lucerlabs.wake;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -30,42 +32,23 @@ public class AlarmViewHolder extends RecyclerView.ViewHolder {
 
 		// Where should these initializations live?
 		// Here in the AlarmViewHolder? Or in the AlarmViewModel?
-		List<String> durationValues = new ArrayList<>();
+		int maxDuration = 15;
+		SeekBar durationSeekBar = mBinding.durationSeekBar;
 		// TODO: Move thresholds like this into an xml config file.
-		int durationMax = 15;
-		for (int i = 1; i <= durationMax; i++ ) {
-			String value = Integer.toString(i);
-			durationValues.add(i < 2 ? value + " minute" : value + " minutes");
-		}
-		ArrayAdapter<String> adapter = new ArrayAdapter<String>(context, R.layout.spinner_item, durationValues);
-		Spinner durationSpinner = mBinding.durationSpinner;
-		durationSpinner.setAdapter(adapter);
-
-		// HACK: getting the minute value by parsing the string; not ideal.
-		durationSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+		durationSeekBar.setMax(maxDuration);
+		durationSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
 			@Override
-			public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-				TextView item = (TextView) view;
-				CharSequence displayValue = item.getText();
-				if (displayValue.length() > 0) {
-					Matcher matcher = mDurationPattern.matcher(displayValue);
-					boolean foundMatches = matcher.lookingAt();
-					if (foundMatches) {
-						Integer minuteValue = 0;
-						try {
-							minuteValue = Integer.parseInt(matcher.group());
-						} catch (NumberFormatException e) {
-							e.printStackTrace();
-							return;
-						}
-
-						mAlarmViewModel.setDuration(minuteValue);
-					}
-				}
+			public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+				mAlarmViewModel.setDuration(progress);
 			}
 
 			@Override
-			public void onNothingSelected(AdapterView<?> parent) {
+			public void onStartTrackingTouch(SeekBar seekBar) {
+
+			}
+
+			@Override
+			public void onStopTrackingTouch(SeekBar seekBar) {
 
 			}
 		});
@@ -109,6 +92,8 @@ public class AlarmViewHolder extends RecyclerView.ViewHolder {
 
 			}
 		});
+
+		mAlarmViewModel.setDayContainer(mBinding.daysOfWeek);
 	}
 
 	public AlarmBinding getBinding() {

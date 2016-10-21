@@ -29,7 +29,7 @@ public class AlarmAdapter extends RecyclerView.Adapter<AlarmViewHolder> {
 		Alarm alarm = mAlarms.get(position);
 		holder.bindAlarm(alarm);
 
-		// potentially should be using getAdapterPosition?
+		// potentially should be using getAdapterPosition?`
 		final int index = position;
 		holder.getBinding().deleteButton.setOnClickListener(new View.OnClickListener() {
 			@Override

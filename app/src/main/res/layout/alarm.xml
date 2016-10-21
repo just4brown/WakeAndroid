@@ -86,12 +86,6 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
 
-                <Button
-                    android:id="@+id/upload_button"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="M"/>
-
             </LinearLayout>
 
             <TextView
@@ -123,22 +117,22 @@
 
             <LinearLayout
                 android:id="@+id/duration_container"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal">
+                android:orientation="vertical">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:fontFamily="sans-serif-thin"
                     android:textColor="@color/clock_white"
-                    android:text="Duration"/>
+                    android:text="@{alarm.durationStatus}"/>
 
-                <Spinner
-                    android:id="@+id/duration_spinner"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:popupBackground="@color/time_picker_gray"/>
+                <SeekBar
+                    android:id="@+id/duration_seek_bar"
+                    android:layout_height="36sp"
+                    android:layout_width="match_parent"
+                    android:progress="@{alarm.duration}"/>
 
             </LinearLayout>
 

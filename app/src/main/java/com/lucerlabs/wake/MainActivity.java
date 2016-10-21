@@ -186,7 +186,7 @@ public class MainActivity extends AppCompatActivity {
 				alarm.getEnabled(),
 				alarm.getHour(),
 				alarm.getMinute(),
-				alarm.getDays(),
+				alarm.getIntegerDays(),
 				alarm.getAudio(),
 				alarm.getDuration(),
 				alarm.getBrightness(),

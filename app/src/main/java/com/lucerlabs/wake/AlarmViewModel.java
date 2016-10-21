@@ -5,6 +5,9 @@ import android.content.Context;
 import android.databinding.BaseObservable;
 import android.databinding.Bindable;
 import android.databinding.DataBindingUtil;
+import android.databinding.Observable;
+import android.databinding.ObservableArrayList;
+import android.databinding.ObservableList;
 import android.graphics.Typeface;
 import android.text.Spannable;
 import android.text.SpannableString;
@@ -12,13 +15,19 @@ import android.text.format.DateFormat;
 import android.text.style.RelativeSizeSpan;
 import android.text.style.StyleSpan;
 import android.text.style.TypefaceSpan;
+
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 
 import android.transition.TransitionManager;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TimePicker;
 
 import com.lucerlabs.wake.databinding.AlarmBinding;
@@ -33,6 +42,8 @@ public class AlarmViewModel extends BaseObservable {
 	private Boolean mIsExpanded;
 	private ViewGroup mTransitionContainer;
 	private View mAlarmDetails;
+	private LinearLayout mDaysContainer;
+	private String mDurationStatus;
 
 	public AlarmViewModel(Context context) {
 		mContext = context;
@@ -57,7 +68,6 @@ public class AlarmViewModel extends BaseObservable {
 			mAlarmDetails.setVisibility(mIsExpanded ? View.VISIBLE : View.GONE);
 			notifyChange();
 		}
-
 	}
 
 	public void setmTransitionContainer(ViewGroup view) {
@@ -66,6 +76,10 @@ public class AlarmViewModel extends BaseObservable {
 
 	public void setAlarmDetailsView (View view) {
 		mAlarmDetails = view;
+	}
+
+	public void setDayContainer (LinearLayout layout) {
+		mDaysContainer = layout;
 	}
 
 	TimePickerDialog.OnTimeSetListener timePickerListener = new TimePickerDialog.OnTimeSetListener() {
@@ -85,6 +99,8 @@ public class AlarmViewModel extends BaseObservable {
 		mAlarm = alarm;
 		notifyChange();
 		updateTime();
+		updateDays();
+		updateDurationStatus();
 	}
 
 	public Alarm getAlarm()  {
@@ -116,13 +132,16 @@ public class AlarmViewModel extends BaseObservable {
 		return mTime;
 	}
 
-	private void updateTime() {
-		final Calendar calendar = Calendar.getInstance();
-		calendar.set(Calendar.HOUR_OF_DAY, mAlarm.getHour());
-		calendar.set(Calendar.MINUTE, mAlarm.getMinute());
-		final CharSequence text = DateFormat.format(mFormat12, calendar);
-		mTime = text.toString();
-		notifyPropertyChanged(com.lucerlabs.wake.BR.time);
+	@Bindable
+	public String getDurationStatus() {
+		return mDurationStatus;
+	}
+
+	public void updateDurationStatus() {
+		int currentDuration = mAlarm.getDuration();
+		String units = currentDuration > 1 ? " minutes" : " minute";
+		mDurationStatus = "Duration: " + Integer.toString(currentDuration) + units;
+		notifyPropertyChanged(com.lucerlabs.wake.BR.durationStatus);
 	}
 
 	public static CharSequence get12ModeFormat(float amPmRatio) {
@@ -176,6 +195,7 @@ public class AlarmViewModel extends BaseObservable {
 	public void setDuration(int value) {
 		mAlarm.setSynchronized(false);
 		mAlarm.setDuration(value);
+		updateDurationStatus();
 	}
 
 	public int getDuration() {
@@ -190,5 +210,48 @@ public class AlarmViewModel extends BaseObservable {
 	public void setLabel(String label) {
 		mAlarm.setLabel(label);
 		notifyPropertyChanged(com.lucerlabs.wake.BR.label);
+	}
+
+	private void updateTime() {
+		final Calendar calendar = Calendar.getInstance();
+		calendar.set(Calendar.HOUR_OF_DAY, mAlarm.getHour());
+		calendar.set(Calendar.MINUTE, mAlarm.getMinute());
+		final CharSequence text = DateFormat.format(mFormat12, calendar);
+		mTime = text.toString();
+		notifyPropertyChanged(com.lucerlabs.wake.BR.time);
+	}
+
+	private void updateDays() {
+		// TODO: consier using recycler view
+		if (mAlarm == null) {
+			return;
+		}
+
+		LinearLayout.LayoutParams dayButtonLayoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+		int dayButtonDimension = (int) mContext.getResources().getDimension(R.dimen.touch_target_min_size);
+		dayButtonLayoutParams.width = dayButtonDimension;
+		dayButtonLayoutParams.height = dayButtonDimension;
+
+		List<DayOfWeek> days = Arrays.asList(DayOfWeek.SUNDAY, DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY, DayOfWeek.SATURDAY);
+		HashSet<DayOfWeek> selectedDays = new HashSet<>(mAlarm.getDays());
+		for (DayOfWeek day : days) {
+			DayOfWeekWidget d = new DayOfWeekWidget(mContext, android.support.design.R.attr.borderlessButtonStyle, day, selectedDays.contains(day));
+			d.setOnClickListener(new View.OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					DayOfWeekWidget dayWidget = ((DayOfWeekWidget) v);
+					boolean currentSelectionValue = dayWidget.getIsSelected();
+					boolean newSelectionValue = !currentSelectionValue;
+					dayWidget.setIsSelected(newSelectionValue);
+					if (newSelectionValue) {
+						mAlarm.addDay(dayWidget.getDayOfWeek());
+					} else {
+						mAlarm.removeDay(dayWidget.getDayOfWeek());
+					}
+
+				}
+			});
+			mDaysContainer.addView(d, dayButtonLayoutParams);
+		}
 	}
 }
