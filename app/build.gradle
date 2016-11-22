@@ -36,4 +36,7 @@ dependencies {
     compile 'com.fasterxml.jackson.core:jackson-databind:2.8.2'
     compile 'com.squareup.okhttp3:okhttp:3.4.1'
     compile 'com.android.support:support-v4:24.2.0'
+    compile 'com.auth0.android:lock:2.1.0'
+    compile 'com.auth0.android:lock-google:1.0.0'
+    compile 'com.auth0.android:lock-facebook:3.0.1'
 }

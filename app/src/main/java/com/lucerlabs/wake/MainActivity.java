@@ -38,13 +38,17 @@ public class MainActivity extends AppCompatActivity {
 	private AlarmAdapter mAlarmAdapter;
 	private final OkHttpClient httpClient = new OkHttpClient();
 	public static final okhttp3.MediaType MEDIA_TYPE_JSON = okhttp3.MediaType.parse("application/json; charset=utf-8");
+	private String authIdToken;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		Bundle extras = getIntent().getExtras();
+		authIdToken = extras.getString("AUTH_ID_TOKEN");
 		setContentView(R.layout.activity_main);
 		Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
 		setSupportActionBar(toolbar);
+
 
 		final TimePickerDialog.OnTimeSetListener timePickerListener = new TimePickerDialog.OnTimeSetListener() {
 			@Override
@@ -80,19 +84,21 @@ public class MainActivity extends AppCompatActivity {
 	}
 
 	public void getAlarmsAsync() {
-		httpClient.newCall(BuildGetAlarmsRequest()).enqueue(new Callback() {
+		httpClient.newCall(BuildGetAlarmsRequest(this.authIdToken)).enqueue(new Callback() {
 			@Override
 			public void onResponse(Call call, final Response response) throws IOException {
 				if (response.isSuccessful()) {
 					final String rawJsonData = response.body().string();
 					ObjectMapper mapper = new ObjectMapper();
 					// TODO: catch exceptions here
-					final Collection<AlarmDto> result = mapper.readValue(rawJsonData, new TypeReference<Collection<AlarmDto>>() { });
+
+					// Deserialize the alarmBody here
+					final AlarmBody result = mapper.readValue(rawJsonData, AlarmBody.class);
 
 					runOnUiThread(new Runnable() {
 						@Override
 						public void run() {
-							for (AlarmDto alarmDto : result) {
+							for (AlarmDto alarmDto : result.getAlarms()) {
 								mAlarms.add(mapAlarm(alarmDto));
 							}
 							mAlarmAdapter.notifyDataSetChanged();
@@ -112,7 +118,7 @@ public class MainActivity extends AppCompatActivity {
 	}
 
 	public void postAlarmsAsync() {
-		httpClient.newCall(BuildPostAlarmsRequest(mAlarms)).enqueue(new Callback() {
+		httpClient.newCall(BuildPostAlarmsRequest(mAlarms, this.authIdToken)).enqueue(new Callback() {
 			@Override
 			public void onResponse(Call call, final Response response) throws IOException {
 				if (response.isSuccessful()) {
@@ -130,15 +136,15 @@ public class MainActivity extends AppCompatActivity {
 		});
 	}
 
-	private static Request BuildGetAlarmsRequest() {
+	private static Request BuildGetAlarmsRequest(String authId) {
 		return new Request.Builder()
-			.header("Authorization", "bearer 3")
+			.header("Authorization", "bearer " + authId)
 			.header("Content-Type","application/json")
 			.url("http://wakeuserapi.azurewebsites.net/v1/alarms")
 			.build();
 	}
 
-	private static Request BuildPostAlarmsRequest(ObservableArrayList<Alarm> alarms) {
+	private static Request BuildPostAlarmsRequest(ObservableArrayList<Alarm> alarms, String authId) {
 		List<AlarmDto> alarmDtos = new ArrayList();
 		for (Alarm model : alarms) {
 			alarmDtos.add(mapAlarm(model));
@@ -149,7 +155,7 @@ public class MainActivity extends AppCompatActivity {
 			byte[] json = w.writeValueAsBytes(alarmDtos);
 
 			return new Request.Builder()
-					.header("Authorization", "bearer 3")
+					.header("Authorization", "bearer " + authId)
 					.header("Content-Type","application/json")
 					.post(RequestBody.create(MEDIA_TYPE_JSON, json))
 					.url("http://wakeuserapi.azurewebsites.net/v1/alarms")
