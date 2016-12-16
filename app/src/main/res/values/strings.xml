@@ -3,4 +3,36 @@
     <string name="title_activity_main">Wak\u0113</string>
     <string name="auth0_client_id">korEcChh8yQKLZE8Dl8pEa2PngjvzGDD</string>
     <string name="auth0_domain">wake.auth0.com</string>
+    <string name="drawer_open">OPEN</string>
+    <string name="drawer_close">CLOSE</string>
+    <string name="title_activity_alarms">AlarmsActivity</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="action_settings">Settings</string>
+    <string name="title_activity_settings">Settings</string>
+
+    <!-- Strings related to Settings -->
+
+    <string name="title_first_section">Setup</string>
+    <string name="setup_section_install">Install Wak\u0113</string>
+    <string name="setup_section_connect">Connect to Wak\u0113</string>
+    <string name="setup_section_connection_status">Not Connected</string>
+    <string name="setup_section_bed">Side of Bed</string>
+    <string-array name="setup_section_side_of_bed_values">
+        <item>Left</item>
+        <item>Right</item>
+    </string-array>
+    <string name="setup_section_timezone">Timezone</string>
+    <string name="setup_section_emails">Wak\u0113 Update Emails</string>
+
+
+    <string name="title_second_section">Secondary User</string>
+    <string name="secondary_user_section_add">Add Secondary User</string>
+    <string name="secondary_user_section_remove">Remove Secondary User</string>
+
+    <string name="title_third_section">More Information</string>
+    <string name="more_info_section_terms">Terms &amp; Conditions</string>
+    <string name="more_info_section_privacy">Privacy Statement</string>
+
+
 </resources>

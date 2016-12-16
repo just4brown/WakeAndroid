@@ -1,30 +1,26 @@
 package com.lucerlabs.wake;
 
 import android.app.TimePickerDialog;
+import android.content.Intent;
 import android.databinding.ObservableArrayList;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
+import android.support.design.widget.NavigationView;
+import android.support.v4.view.GravityCompat;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TimePicker;
-
+import android.support.v4.widget.DrawerLayout;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.*;
-
-
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.OkHttpClient;
@@ -32,13 +28,17 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity
+		implements NavigationView.OnNavigationItemSelectedListener, AlarmsFragment.AlarmFragmentListener {
 
 	private ObservableArrayList<Alarm> mAlarms;
-	private AlarmAdapter mAlarmAdapter;
 	private final OkHttpClient httpClient = new OkHttpClient();
 	public static final okhttp3.MediaType MEDIA_TYPE_JSON = okhttp3.MediaType.parse("application/json; charset=utf-8");
 	private String authIdToken;
+	private DrawerLayout mDrawerLayout;
+	private ActionBarDrawerToggle mDrawerToggle;
+	private ListView mDrawerList;
+	private FloatingActionButton addAlarmButton;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -46,21 +46,32 @@ public class MainActivity extends AppCompatActivity {
 		Bundle extras = getIntent().getExtras();
 		authIdToken = extras.getString("AUTH_ID_TOKEN");
 		setContentView(R.layout.activity_main);
+
+
 		Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
 		setSupportActionBar(toolbar);
 
+		mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+		ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+				this, mDrawerLayout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+		mDrawerLayout.setDrawerListener(toggle);
+		toggle.syncState();
+
+		NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+		navigationView.setNavigationItemSelectedListener(this);
+		navigationView.setCheckedItem(R.id.nav_alarms);
 
 		final TimePickerDialog.OnTimeSetListener timePickerListener = new TimePickerDialog.OnTimeSetListener() {
 			@Override
 			public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
 				Alarm alarm = new Alarm("New alarm", hourOfDay, minute, true);
 				mAlarms.add(alarm);
-				mAlarmAdapter.notifyDataSetChanged();
 			}
 		};
 		final TimePickerDialog newAlarmDialog = new TimePickerDialog(this, timePickerListener, 9, 0, false);
-		FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-		fab.setOnClickListener(new View.OnClickListener() {
+
+		addAlarmButton = (FloatingActionButton) findViewById(R.id.fab);
+		addAlarmButton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
 				newAlarmDialog.show();
@@ -75,12 +86,42 @@ public class MainActivity extends AppCompatActivity {
 			}
 		});
 
-		RecyclerView recyclerView = (RecyclerView) findViewById(R.id.alarms);
-		recyclerView.setLayoutManager(new LinearLayoutManager(this));
 		mAlarms = new ObservableArrayList<Alarm>();
-		mAlarmAdapter = new AlarmAdapter(mAlarms);
-		recyclerView.setAdapter(mAlarmAdapter);
+		getFragmentManager().beginTransaction().add(R.id.frame_content, new AlarmsFragment()).commit();
 		getAlarmsAsync();
+	}
+
+	@Override
+	public ObservableArrayList<Alarm> getObservableAlarms() {
+		return mAlarms;
+	}
+
+	@Override
+	public void onBackPressed() {
+		DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+		if (drawer.isDrawerOpen(GravityCompat.START)) {
+			drawer.closeDrawer(GravityCompat.START);
+		} else {
+			super.onBackPressed();
+		}
+	}
+
+	@SuppressWarnings("StatementWithEmptyBody")
+	@Override
+	public boolean onNavigationItemSelected(MenuItem item) {
+		// Handle navigation view item clicks here.
+		int id = item.getItemId();
+
+		if (id == R.id.nav_settings) {
+			addAlarmButton.setVisibility(View.INVISIBLE);
+			getFragmentManager().beginTransaction().replace(R.id.frame_content, new SettingsFragment()).commit();
+		} else if (id == R.id.nav_alarms) {
+			addAlarmButton.setVisibility(View.VISIBLE);
+			getFragmentManager().beginTransaction().replace(R.id.frame_content, new AlarmsFragment()).commit();
+		}
+
+		mDrawerLayout.closeDrawer(GravityCompat.START);
+		return true;
 	}
 
 	public void getAlarmsAsync() {
@@ -101,7 +142,6 @@ public class MainActivity extends AppCompatActivity {
 							for (AlarmDto alarmDto : result.getAlarms()) {
 								mAlarms.add(mapAlarm(alarmDto));
 							}
-							mAlarmAdapter.notifyDataSetChanged();
 						}
 					});
 				}
@@ -166,7 +206,7 @@ public class MainActivity extends AppCompatActivity {
 		}
 	}
 
-	public static Alarm mapAlarm(AlarmDto alarmDto) {
+	private static Alarm mapAlarm(AlarmDto alarmDto) {
 		return new Alarm(
 			alarmDto.getHour(),
 			alarmDto.getMinute(),
@@ -184,7 +224,7 @@ public class MainActivity extends AppCompatActivity {
 		);
 	}
 
-	public static AlarmDto mapAlarm(Alarm alarm) {
+	private static AlarmDto mapAlarm(Alarm alarm) {
 		return new AlarmDto(
 				alarm.getUserID(),
 				alarm.getLabel(),

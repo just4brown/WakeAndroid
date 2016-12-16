@@ -1,0 +1,68 @@
+<PreferenceScreen
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:title="root_pref">
+
+    <PreferenceCategory
+        android:title="@string/title_first_section">
+
+        <Preference
+            android:key="install_preference"
+            android:title="@string/setup_section_install"
+            android:summary="Not Set"
+            android:dialogTitle="Dialog Title"/>
+
+        <Preference
+            android:key="connect_preference"
+            android:title="@string/setup_section_connect"
+            android:summary="@string/setup_section_connection_status"
+            android:dialogTitle="Dialog Title"/>
+
+        <ListPreference
+            android:key="side_of_bed_preference"
+            android:title="@string/setup_section_bed"
+            android:summary="Not Set"
+            android:entryValues="@array/setup_section_side_of_bed_values"
+            android:entries="@array/setup_section_side_of_bed_values"
+            android:dialogTitle="Dialog Title"/>
+
+        <Preference
+            android:key="timezone_preference"
+            android:title="@string/setup_section_timezone"
+            android:summary="Not Set"
+            android:dialogTitle="Dialog Title"/>
+
+        <Preference
+            android:key="email_preference"
+            android:title="@string/setup_section_emails"
+            android:summary="Not Set"
+            android:dialogTitle="Dialog Title"/>
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="@string/title_second_section">
+
+        <PreferenceScreen
+            android:key="secondary_user_section_add_preference"
+            android:title="@string/secondary_user_section_add"/>
+
+        <PreferenceScreen
+            android:key="secondary_user_section_remove_preference"
+            android:title="@string/secondary_user_section_remove"/>
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="@string/title_third_section">
+
+        <PreferenceScreen
+            android:key="terms_preference"
+            android:title="@string/more_info_section_terms"/>
+
+        <PreferenceScreen
+            android:key="privacy_preference"
+            android:title="@string/more_info_section_privacy"/>
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

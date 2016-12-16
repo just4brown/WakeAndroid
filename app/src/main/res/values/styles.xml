@@ -6,6 +6,7 @@
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
+        <item name="preferenceTheme">@style/SettingsPreferenceTheme</item>
     </style>
 
     <style name="AppTheme.NoActionBar">
@@ -13,13 +14,24 @@
         <item name="windowNoTitle">true</item>
     </style>
 
-    <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
+    <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar"/>
 
-    <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+    <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light"/>
 
     <style name="ControlAccentThemeOverlay">
         <!-- Attributes from support.v7.appcompat -->
         <item name="colorControlActivated">?attr/colorAccent</item>
     </style>
 
+    <style name="SettingsPreferenceTheme" parent="PreferenceThemeOverlay.v14.Material">
+        <item name="preferenceFragmentStyle">@style/SettingsPreferenceFragmentStyle</item>
+        <item name="android:textColorPrimary">@color/white</item>
+        <item name="android:textColorSecondary">@color/clock_gray</item>
+    </style>
+
+    <style name="SettingsPreferenceFragmentStyle" parent="PreferenceThemeOverlay.v14.Material">
+        <item name="android:divider">@color/hairline</item>
+        <item name="android:dividerHeight">@dimen/hairline_height</item>
+
+    </style>
 </resources>
