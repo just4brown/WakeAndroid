@@ -8,8 +8,8 @@
         <Preference
             android:key="install_preference"
             android:title="@string/setup_section_install"
-            android:summary="Not Set"
-            android:dialogTitle="Dialog Title"/>
+            android:summary="View"
+            android:fragment="com.lucerlabs.wake.ScreenSlidePageFragment"/>
 
         <Preference
             android:key="connect_preference"

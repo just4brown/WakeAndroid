@@ -1,5 +1,7 @@
 package com.lucerlabs.wake;
 
+import android.app.Activity;
+import android.app.Fragment;
 import android.app.TimePickerDialog;
 import android.content.Intent;
 import android.databinding.ObservableArrayList;
@@ -29,7 +31,7 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 
 public class MainActivity extends AppCompatActivity
-		implements NavigationView.OnNavigationItemSelectedListener, AlarmsFragment.AlarmFragmentListener {
+		implements NavigationView.OnNavigationItemSelectedListener, AlarmsFragment.AlarmFragmentListener, SettingsFragment.SettingsFragmentListener {
 
 	private ObservableArrayList<Alarm> mAlarms;
 	private final OkHttpClient httpClient = new OkHttpClient();
@@ -94,6 +96,11 @@ public class MainActivity extends AppCompatActivity
 	@Override
 	public ObservableArrayList<Alarm> getObservableAlarms() {
 		return mAlarms;
+	}
+
+	@Override
+	public void setNewFragment(Fragment fragment) {
+		getFragmentManager().beginTransaction().replace(R.id.frame_content, fragment).commit();
 	}
 
 	@Override

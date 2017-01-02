@@ -9,6 +9,10 @@
         <item name="preferenceTheme">@style/SettingsPreferenceTheme</item>
     </style>
 
+    <style name="AppTheme.Lock.Theme" parent="Lock.Theme">
+        <item name="Auth0.HeaderTitle">@string/app_name</item>
+    </style>
+
     <style name="AppTheme.NoActionBar">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
