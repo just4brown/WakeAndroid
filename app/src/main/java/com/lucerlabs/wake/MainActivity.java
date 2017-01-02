@@ -54,10 +54,19 @@ public class MainActivity extends AppCompatActivity
 		setSupportActionBar(toolbar);
 
 		mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-		ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+		mDrawerToggle = new ActionBarDrawerToggle(
 				this, mDrawerLayout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-		mDrawerLayout.setDrawerListener(toggle);
-		toggle.syncState();
+		mDrawerLayout.setDrawerListener(mDrawerToggle);
+		mDrawerToggle.syncState();
+
+		mDrawerToggle.setToolbarNavigationClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				if (!mDrawerToggle.isDrawerIndicatorEnabled()) {
+					onBackPressed();
+				}
+			}
+		});
 
 		NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
 		navigationView.setNavigationItemSelectedListener(this);
@@ -100,12 +109,18 @@ public class MainActivity extends AppCompatActivity
 
 	@Override
 	public void setNewFragment(Fragment fragment) {
-		getFragmentManager().beginTransaction().replace(R.id.frame_content, fragment).commit();
+		mDrawerToggle.setDrawerIndicatorEnabled(false);
+		getFragmentManager().beginTransaction().replace(R.id.frame_content, fragment).addToBackStack(null).commit();
+		mDrawerToggle.setHomeAsUpIndicator(R.drawable.ic_arrow_back_black_24dp);
+		mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
 	}
 
 	@Override
 	public void onBackPressed() {
-		DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+		mDrawerToggle.setDrawerIndicatorEnabled(true);
+		mDrawerToggle.setHomeAsUpIndicator(0);
+		mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
+		DrawerLayout drawer = mDrawerLayout;
 		if (drawer.isDrawerOpen(GravityCompat.START)) {
 			drawer.closeDrawer(GravityCompat.START);
 		} else {
