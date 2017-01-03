@@ -53,5 +53,6 @@ public class SettingsFragment extends PreferenceFragment {
 
 	public interface SettingsFragmentListener {
 		void setNewFragment(Fragment fragment);
+		void postSideOfBedPreference();
 	}
 }

@@ -18,9 +18,11 @@
     <string name="setup_section_connect">Connect to Wak\u0113</string>
     <string name="setup_section_connection_status">Not Connected</string>
     <string name="setup_section_bed">Side of Bed</string>
+    <string name="setup_section_bed_summary">When in bed, what side of the bed are you generally closest to?</string>
     <string-array name="setup_section_side_of_bed_values">
-        <item>Left</item>
-        <item>Right</item>
+        <item>Left side</item>
+        <item>Right side</item>
+        <item>I have the bed to myself</item>
     </string-array>
     <string name="setup_section_timezone">Timezone</string>
     <string name="setup_section_emails">Wak\u0113 Update Emails</string>

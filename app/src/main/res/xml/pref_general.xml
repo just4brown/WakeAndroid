@@ -14,8 +14,7 @@
         <Preference
             android:key="connect_preference"
             android:title="@string/setup_section_connect"
-            android:summary="@string/setup_section_connection_status"
-            android:dialogTitle="Dialog Title"/>
+            android:summary="@string/setup_section_connection_status"/>
 
         <ListPreference
             android:key="side_of_bed_preference"
@@ -23,7 +22,7 @@
             android:summary="Not Set"
             android:entryValues="@array/setup_section_side_of_bed_values"
             android:entries="@array/setup_section_side_of_bed_values"
-            android:dialogTitle="Dialog Title"/>
+            android:dialogTitle="@string/setup_section_bed_summary"/>
 
         <Preference
             android:key="timezone_preference"

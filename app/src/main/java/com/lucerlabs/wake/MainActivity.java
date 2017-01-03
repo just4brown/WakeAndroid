@@ -1,9 +1,7 @@
 package com.lucerlabs.wake;
 
-import android.app.Activity;
 import android.app.Fragment;
 import android.app.TimePickerDialog;
-import android.content.Intent;
 import android.databinding.ObservableArrayList;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -12,6 +10,7 @@ import android.support.v4.view.GravityCompat;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageButton;
@@ -99,6 +98,11 @@ public class MainActivity extends AppCompatActivity
 
 		mAlarms = new ObservableArrayList<Alarm>();
 		getFragmentManager().beginTransaction().add(R.id.frame_content, new AlarmsFragment()).commit();
+	}
+
+	@Override
+	protected void onStart() {
+		super.onStart();
 		getAlarmsAsync();
 	}
 
@@ -113,6 +117,11 @@ public class MainActivity extends AppCompatActivity
 		getFragmentManager().beginTransaction().replace(R.id.frame_content, fragment).addToBackStack(null).commit();
 		mDrawerToggle.setHomeAsUpIndicator(R.drawable.ic_arrow_back_black_24dp);
 		mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
+	}
+
+	@Override
+	public void postSideOfBedPreference() {
+
 	}
 
 	@Override
@@ -150,6 +159,7 @@ public class MainActivity extends AppCompatActivity
 		httpClient.newCall(BuildGetAlarmsRequest(this.authIdToken)).enqueue(new Callback() {
 			@Override
 			public void onResponse(Call call, final Response response) throws IOException {
+				Log.e("HTTP STATUS CODE", Integer.toString(response.code()));
 				if (response.isSuccessful()) {
 					final String rawJsonData = response.body().string();
 					ObjectMapper mapper = new ObjectMapper();
@@ -168,6 +178,7 @@ public class MainActivity extends AppCompatActivity
 					});
 				}
 				else {
+					Log.e("onResponse fail: ", response.body().string());
 					throw new IOException("Http failure");
 				}
 			}
@@ -211,10 +222,12 @@ public class MainActivity extends AppCompatActivity
 		for (Alarm model : alarms) {
 			alarmDtos.add(mapAlarm(model));
 		}
+
+		AlarmBody body = new AlarmBody(alarmDtos);
 		ObjectMapper objectMapper = new ObjectMapper();
 		final ObjectWriter w = objectMapper.writer();
 		try {
-			byte[] json = w.writeValueAsBytes(alarmDtos);
+			byte[] json = w.writeValueAsBytes(body);
 
 			return new Request.Builder()
 					.header("Authorization", "bearer " + authId)
