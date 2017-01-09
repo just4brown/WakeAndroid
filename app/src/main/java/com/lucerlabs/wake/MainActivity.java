@@ -28,6 +28,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import io.particle.android.sdk.devicesetup.ParticleDeviceSetupLibrary;
 
 public class MainActivity extends AppCompatActivity
 		implements NavigationView.OnNavigationItemSelectedListener, AlarmsFragment.AlarmFragmentListener, SettingsFragment.SettingsFragmentListener {
@@ -98,6 +99,8 @@ public class MainActivity extends AppCompatActivity
 
 		mAlarms = new ObservableArrayList<Alarm>();
 		getFragmentManager().beginTransaction().add(R.id.frame_content, new AlarmsFragment()).commit();
+
+		ParticleDeviceSetupLibrary.init(this.getApplicationContext(), MainActivity.class);
 	}
 
 	@Override

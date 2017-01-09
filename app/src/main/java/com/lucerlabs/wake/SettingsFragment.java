@@ -9,6 +9,8 @@ import android.support.v14.preference.PreferenceFragment;
 import android.support.v7.preference.ListPreference;
 import android.support.v7.preference.Preference;
 
+import io.particle.android.sdk.devicesetup.ParticleDeviceSetupLibrary;
+
 public class SettingsFragment extends PreferenceFragment {
 
 	private ListPreference mListPreference;
@@ -49,6 +51,10 @@ public class SettingsFragment extends PreferenceFragment {
 			throw new RuntimeException(context.toString()
 					+ " must implement SettingsFragmentListener");
 		}
+	}
+
+	public void startParticleSetup(){
+		//ParticleDeviceSetupLibrary.startDeviceSetup();
 	}
 
 	public interface SettingsFragmentListener {

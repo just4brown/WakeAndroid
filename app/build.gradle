@@ -40,5 +40,6 @@ dependencies {
     compile 'com.auth0.android:lock-google:1.0.0'
     compile 'com.auth0.android:lock-facebook:3.0.1'
     compile 'com.android.support:support-vector-drawable:25.0.1'
+    compile 'io.particle:devicesetup:0.3.7'
     testCompile 'junit:junit:4.12'
 }
