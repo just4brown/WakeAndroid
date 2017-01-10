@@ -40,6 +40,15 @@ public class SettingsFragment extends PreferenceFragment {
 				return true;
 			}
 		});
+
+		Preference connection = getPreferenceManager().findPreference("connect_preference");
+		connection.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+			@Override
+			public boolean onPreferenceClick(Preference preference) {
+				mListener.startParticleSetup();
+				return true;
+			}
+		});
 	}
 
 	@Override
@@ -60,5 +69,6 @@ public class SettingsFragment extends PreferenceFragment {
 	public interface SettingsFragmentListener {
 		void setNewFragment(Fragment fragment);
 		void postSideOfBedPreference();
+		void startParticleSetup();
 	}
 }

@@ -198,6 +198,11 @@ public class MainActivity extends AppCompatActivity
 	}
 
 	@Override
+	public void startParticleSetup() {
+		ParticleDeviceSetupLibrary.startDeviceSetup(this, new WakeParticleSetupCompleteIntentBuilder());
+	}
+
+	@Override
 	public void postSideOfBedPreference() {
 
 	}
