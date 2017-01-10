@@ -8,6 +8,9 @@ import android.os.Bundle;
 import android.widget.Toast;
 
 import com.auth0.android.Auth0;
+import com.auth0.android.authentication.AuthenticationAPIClient;
+import com.auth0.android.google.GoogleAuthHandler;
+import com.auth0.android.google.GoogleAuthProvider;
 import com.auth0.android.lock.AuthenticationCallback;
 import com.auth0.android.lock.Lock;
 import com.auth0.android.lock.LockCallback;

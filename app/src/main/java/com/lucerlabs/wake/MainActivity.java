@@ -2,6 +2,7 @@ package com.lucerlabs.wake;
 
 import android.app.Fragment;
 import android.app.TimePickerDialog;
+import android.content.Intent;
 import android.databinding.ObservableArrayList;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -30,6 +31,11 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 import io.particle.android.sdk.devicesetup.ParticleDeviceSetupLibrary;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
+import com.microsoft.windowsazure.notifications.NotificationsManager;
+import android.widget.Toast;
+
 public class MainActivity extends AppCompatActivity
 		implements NavigationView.OnNavigationItemSelectedListener, AlarmsFragment.AlarmFragmentListener, SettingsFragment.SettingsFragmentListener {
 
@@ -42,6 +48,11 @@ public class MainActivity extends AppCompatActivity
 	private ListView mDrawerList;
 	private FloatingActionButton addAlarmButton;
 
+	// Notification stuff
+	public static MainActivity mainActivity;
+	public static Boolean isVisible = false;
+	private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -49,6 +60,9 @@ public class MainActivity extends AppCompatActivity
 		authIdToken = extras.getString("AUTH_ID_TOKEN");
 		setContentView(R.layout.activity_main);
 
+		mainActivity = this;
+		NotificationsManager.handleNotifications(this, NotificationSettings.SenderId, WakeNotificationHandler.class);
+		registerWithNotificationHubs();
 
 		Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
 		setSupportActionBar(toolbar);
@@ -106,7 +120,68 @@ public class MainActivity extends AppCompatActivity
 	@Override
 	protected void onStart() {
 		super.onStart();
+		isVisible = true;
 		getAlarmsAsync();
+	}
+
+	@Override
+	protected void onPause() {
+		super.onPause();
+		isVisible = false;
+	}
+
+	@Override
+	protected void onResume() {
+		super.onResume();
+		isVisible = true;
+	}
+
+	@Override
+	protected void onStop() {
+		super.onStop();
+		isVisible = false;
+	}
+
+	public void ToastNotify(final String notificationMessage) {
+		runOnUiThread(new Runnable() {
+			@Override
+			public void run() {
+				Toast.makeText(MainActivity.this, notificationMessage, Toast.LENGTH_LONG).show();
+			}
+		});
+	}
+
+	/**
+	 * Check the device to make sure it has the Google Play Services APK. If
+	 * it doesn't, display a dialog that allows users to download the APK from
+	 * the Google Play Store or enable it in the device's system settings.
+	 */
+	private boolean checkPlayServices() {
+		GoogleApiAvailability apiAvailability = GoogleApiAvailability.getInstance();
+		int resultCode = apiAvailability.isGooglePlayServicesAvailable(this);
+		if (resultCode != ConnectionResult.SUCCESS) {
+			if (apiAvailability.isUserResolvableError(resultCode)) {
+				apiAvailability.getErrorDialog(this, resultCode, PLAY_SERVICES_RESOLUTION_REQUEST)
+						.show();
+			} else {
+				Log.i("info", "This device is not supported by Google Play Services.");
+				ToastNotify("This device is not supported by Google Play Services.");
+				finish();
+			}
+			return false;
+		}
+		return true;
+	}
+
+	public void registerWithNotificationHubs()
+	{
+		Log.i("info", " Registering with Notification Hubs");
+
+		if (checkPlayServices()) {
+			// Start IntentService to register this application with GCM.
+			Intent intent = new Intent(this, RegistrationIntentService.class);
+			startService(intent);
+		}
 	}
 
 	@Override

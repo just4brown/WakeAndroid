@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "654311825352",
+    "firebase_url": "https://wake-5caef.firebaseio.com",
+    "project_id": "wake-5caef",
+    "storage_bucket": "wake-5caef.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:654311825352:android:dd774c2c2f487b30",
+        "android_client_info": {
+          "package_name": "com.lucerlabs.wake"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "654311825352-s0cknp0csnlfp2704sbpb0r8p03jn9h8.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBIysY8K79szW9P-pmnSpAzS8OlLfjGT5s"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

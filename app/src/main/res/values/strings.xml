@@ -1,8 +1,10 @@
 <resources>
-    <string name="app_name">Wake</string>
+    <string name="app_name">Wak\u0113</string>
     <string name="title_activity_main">Wak\u0113</string>
     <string name="auth0_client_id">korEcChh8yQKLZE8Dl8pEa2PngjvzGDD</string>
     <string name="auth0_domain">wake.auth0.com</string>
+    <string name="google_server_client_id">272046375582-grovj0gbc3eke2uivqu1u2qlbnpjm3tu.apps.googleusercontent.com</string>
+    <string name="gms_project_number">272046375582</string>
     <string name="drawer_open">OPEN</string>
     <string name="drawer_close">CLOSE</string>
     <string name="title_activity_alarms">AlarmsActivity</string>
