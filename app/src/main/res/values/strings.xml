@@ -38,5 +38,11 @@
     <string name="more_info_section_terms">Terms &amp; Conditions</string>
     <string name="more_info_section_privacy">Privacy Statement</string>
 
+    <string name="onboarding_welcome">Welcome to Wak\u0113</string>
+    <string name="onboarding_prompt">It looks like you don\'t have a Wak\u0113 associated with your account. Would you like to set up a new Wak\u0113 or associate your account with a Wak\u0113 that has already been set up?</string>
+    <string name="onboarding_primary">Set Up New Wak\u0113</string>
+    <string name="onboarding_secondary">Associate Existing Wak\u0113</string>
+    <string name="account_sign_out">Sign Out</string>
+
 
 </resources>

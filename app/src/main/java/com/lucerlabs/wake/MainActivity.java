@@ -37,7 +37,11 @@ import com.microsoft.windowsazure.notifications.NotificationsManager;
 import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity
-		implements NavigationView.OnNavigationItemSelectedListener, AlarmsFragment.AlarmFragmentListener, SettingsFragment.SettingsFragmentListener {
+		implements
+		NavigationView.OnNavigationItemSelectedListener,
+		AlarmsFragment.AlarmFragmentListener,
+		SettingsFragment.SettingsFragmentListener,
+		OnboardingFragment.OnboardingFragmentListener {
 
 	private ObservableArrayList<Alarm> mAlarms;
 	private final OkHttpClient httpClient = new OkHttpClient();
@@ -121,7 +125,7 @@ public class MainActivity extends AppCompatActivity
 	protected void onStart() {
 		super.onStart();
 		isVisible = true;
-		getAlarmsAsync();
+		getUserInfoAsync();
 	}
 
 	@Override
@@ -208,6 +212,42 @@ public class MainActivity extends AppCompatActivity
 	}
 
 	@Override
+	public View.OnClickListener getSignOutButtonListener() {
+		return new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				if (!mDrawerToggle.isDrawerIndicatorEnabled()) {
+					onBackPressed();
+				}
+			}
+		};
+	}
+
+	@Override
+	public View.OnClickListener getPrimaryUserSelectedListener() {
+		return new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				if (!mDrawerToggle.isDrawerIndicatorEnabled()) {
+					onBackPressed();
+				}
+			}
+		};
+	}
+
+	@Override
+	public View.OnClickListener getSecondaryUserSelectedListener() {
+		return new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				if (!mDrawerToggle.isDrawerIndicatorEnabled()) {
+					onBackPressed();
+				}
+			}
+		};
+	}
+
+	@Override
 	public void onBackPressed() {
 		mDrawerToggle.setDrawerIndicatorEnabled(true);
 		mDrawerToggle.setHomeAsUpIndicator(0);
@@ -273,6 +313,46 @@ public class MainActivity extends AppCompatActivity
 		});
 	}
 
+	public void getUserInfoAsync() {
+		httpClient.newCall(BuildGetUserRequest(this.authIdToken)).enqueue(new Callback() {
+			@Override
+			public void onResponse(Call call, final Response response) throws IOException {
+				Log.e("HTTP STATUS CODE", Integer.toString(response.code()));
+				if (response.isSuccessful()) {
+					final String rawJsonData = response.body().string();
+					ObjectMapper mapper = new ObjectMapper();
+					final UserDto user = mapper.readValue(rawJsonData, UserDto.class);
+
+					if (user.isRegistered()) {
+						// TODO: set user name/email/icon in nav drawer
+						getAlarmsAsync();
+					}
+
+					else {
+						// init onboarding
+						runOnUiThread(new Runnable() {
+							@Override
+							public void run() {
+								// TODO: make this a separate activity, not just fragment. Don't want to show navbar or toolbar
+								setNewFragment(new OnboardingFragment());
+							}
+						});
+
+					}
+				}
+				else {
+					Log.e("onResponse fail: ", response.body().string());
+					throw new IOException("Http failure");
+				}
+			}
+
+			@Override
+			public void onFailure(Call call, IOException e) {
+				e.printStackTrace();
+			}
+		});
+	}
+
 	public void postAlarmsAsync() {
 		httpClient.newCall(BuildPostAlarmsRequest(mAlarms, this.authIdToken)).enqueue(new Callback() {
 			@Override
@@ -297,6 +377,14 @@ public class MainActivity extends AppCompatActivity
 			.header("Authorization", "bearer " + authId)
 			.header("Content-Type","application/json")
 			.url("http://wakeuserapi.azurewebsites.net/v1/alarms")
+			.build();
+	}
+
+	private static Request BuildGetUserRequest(String authId) {
+		return new Request.Builder()
+			.header("Authorization", "bearer " + authId)
+			.header("Content-Type","application/json")
+			.url("http://wakeuserapi.azurewebsites.net/v1/users")
 			.build();
 	}
 
