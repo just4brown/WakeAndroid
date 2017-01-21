@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent">
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                  android:orientation="horizontal"
+                  android:layout_width="match_parent"
+                  android:layout_height="wrap_content">
+        <fragment
+            android:id="@+id/onboarding_settings_fragment"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:name="com.lucerlabs.wake.OnboardingSettingsFragment"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="32dp">
+
+        <TextView
+            android:text="@string/wake_privacy_statement_url"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingLeft="16dp"
+            android:paddingRight="16dp"
+            android:id="@+id/privacy_statement_url_text_view"
+            android:textAppearance="?android:attr/textAppearanceLarge"/>
+
+        <TextView
+            android:text="@string/wake_terms_and_conditions_url"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingLeft="16dp"
+            android:paddingRight="16dp"
+            android:id="@+id/terms_url_text_view"
+            android:textAppearance="?android:attr/textAppearanceLarge"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="128dp">
+
+        <Button
+            android:text="@string/onboarding_primary_back"
+            android:layout_width="256dp"
+            android:layout_height="wrap_content"
+            android:id="@+id/primary_user_button"/>
+
+        <Button
+            android:text="@string/onboarding_primary_finish"
+            android:layout_width="256dp"
+            android:layout_height="wrap_content"
+            android:id="@+id/button3"/>
+
+    </LinearLayout>
+</LinearLayout>

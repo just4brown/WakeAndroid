@@ -37,13 +37,13 @@
             android:text="@string/onboarding_primary"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/button2"/>
+            android:id="@+id/primary_user_button"/>
 
         <Button
             android:text="@string/onboarding_secondary"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/button3"/>
+            android:id="@+id/secondary_user_button"/>
 
         <Button
             android:text="@string/account_sign_out"

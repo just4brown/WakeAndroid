@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:title="root_pref">
@@ -29,36 +30,8 @@
             android:title="@string/setup_section_timezone"/>
 
         <Preference
-            android:key="email_preference"
-            android:title="@string/setup_section_emails"
-            android:summary="Not Set"
-            android:dialogTitle="Dialog Title"/>
-
-    </PreferenceCategory>
-
-    <PreferenceCategory
-        android:title="@string/title_second_section">
-
-        <PreferenceScreen
-            android:key="secondary_user_section_add_preference"
-            android:title="@string/secondary_user_section_add"/>
-
-        <PreferenceScreen
-            android:key="secondary_user_section_remove_preference"
-            android:title="@string/secondary_user_section_remove"/>
-
-    </PreferenceCategory>
-
-    <PreferenceCategory
-        android:title="@string/title_third_section">
-
-        <PreferenceScreen
-            android:key="terms_preference"
-            android:title="@string/more_info_section_terms"/>
-
-        <PreferenceScreen
-            android:key="privacy_preference"
-            android:title="@string/more_info_section_privacy"/>
+            android:key="help_preference"
+            android:title="@string/setup_section_help"/>
 
     </PreferenceCategory>
 

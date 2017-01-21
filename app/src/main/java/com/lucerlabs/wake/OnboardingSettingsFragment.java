@@ -13,24 +13,24 @@ import java.util.TimeZone;
 
 import io.particle.android.sdk.devicesetup.ParticleDeviceSetupLibrary;
 
-public class SettingsFragment extends PreferenceFragment {
+public class OnboardingSettingsFragment extends PreferenceFragment {
 
 	private ListPreference mListPreference;
 
-	private SettingsFragmentListener mListener;
+	private SettingsFragment.SettingsFragmentListener mListener;
 
-	public SettingsFragment() {
+	public OnboardingSettingsFragment() {
 	}
 
 	@Override
 	public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
-		setPreferencesFromResource(R.xml.pref_general, rootKey);
+		setPreferencesFromResource(R.xml.pref_onboarding, rootKey);
 		mListPreference = (ListPreference) getPreferenceManager().findPreference("side_of_bed_preference");
 		mListPreference.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
 			@Override
 			public boolean onPreferenceChange(Preference preference, Object newValue) {
-			preference.setSummary(newValue.toString());
-			return true;
+				preference.setSummary(newValue.toString());
+				return true;
 			}
 		});
 
@@ -68,18 +68,11 @@ public class SettingsFragment extends PreferenceFragment {
 	@Override
 	public void onAttach(Context context) {
 		super.onAttach(context);
-		if (context instanceof SettingsFragmentListener) {
-			mListener = (SettingsFragmentListener) context;
+		if (context instanceof SettingsFragment.SettingsFragmentListener) {
+			mListener = (SettingsFragment.SettingsFragmentListener) context;
 		} else {
 			throw new RuntimeException(context.toString()
 					+ " must implement SettingsFragmentListener");
 		}
-	}
-
-	public interface SettingsFragmentListener {
-		void setNewFragment(Fragment fragment, boolean showBackButton);
-		void postSideOfBedPreference();
-
-		void startParticleSetup();
 	}
 }

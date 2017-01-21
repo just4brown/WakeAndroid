@@ -1,6 +1,7 @@
 package com.lucerlabs.wake;
 
 import android.app.Fragment;
+import android.app.FragmentTransaction;
 import android.app.TimePickerDialog;
 import android.content.Intent;
 import android.databinding.ObservableArrayList;
@@ -41,7 +42,9 @@ public class MainActivity extends AppCompatActivity
 		NavigationView.OnNavigationItemSelectedListener,
 		AlarmsFragment.AlarmFragmentListener,
 		SettingsFragment.SettingsFragmentListener,
-		OnboardingFragment.OnboardingFragmentListener {
+		OnboardingFragment.OnboardingFragmentListener,
+		PrimaryOnboardingFragment.PrimaryOnboardingFragmentListener,
+		SecondaryOnboardingFragment.SecondaryOnboardingFragmentListener {
 
 	private ObservableArrayList<Alarm> mAlarms;
 	private final OkHttpClient httpClient = new OkHttpClient();
@@ -194,11 +197,16 @@ public class MainActivity extends AppCompatActivity
 	}
 
 	@Override
-	public void setNewFragment(Fragment fragment) {
+	public void setNewFragment(Fragment fragment, boolean showBackButton) {
 		mDrawerToggle.setDrawerIndicatorEnabled(false);
-		getFragmentManager().beginTransaction().replace(R.id.frame_content, fragment).addToBackStack(null).commit();
-		mDrawerToggle.setHomeAsUpIndicator(R.drawable.ic_arrow_back_black_24dp);
-		mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
+		FragmentTransaction newFragmentTransaction = getFragmentManager().beginTransaction().replace(R.id.frame_content, fragment);
+		if (showBackButton) {
+			newFragmentTransaction.addToBackStack(null);
+			mDrawerToggle.setHomeAsUpIndicator(R.drawable.ic_arrow_back_black_24dp);
+			mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
+		}
+
+		newFragmentTransaction.commit();
 	}
 
 	@Override
@@ -209,6 +217,16 @@ public class MainActivity extends AppCompatActivity
 	@Override
 	public void postSideOfBedPreference() {
 
+	}
+
+	@Override
+	public void completePrimaryUserOnboarding() {
+		// if (currentUser.hasParticleCcode == null) { show alert dialog "not connected to wake" }
+		// if (currentUser.sideOfBed == null) { show alert dialog "must select bedside" }
+		// since timezone is automatically detected, we won't require the user to select a timezone
+
+
+		// TODO: show popup confirming to user that he/she agrees to terms and conditions
 	}
 
 	@Override
@@ -228,9 +246,7 @@ public class MainActivity extends AppCompatActivity
 		return new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
-				if (!mDrawerToggle.isDrawerIndicatorEnabled()) {
-					onBackPressed();
-				}
+				setNewFragment(new PrimaryOnboardingFragment(), true);
 			}
 		};
 	}
@@ -240,9 +256,7 @@ public class MainActivity extends AppCompatActivity
 		return new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
-				if (!mDrawerToggle.isDrawerIndicatorEnabled()) {
-					onBackPressed();
-				}
+				setNewFragment(new SecondaryOnboardingFragment(), true);
 			}
 		};
 	}
@@ -333,8 +347,10 @@ public class MainActivity extends AppCompatActivity
 						runOnUiThread(new Runnable() {
 							@Override
 							public void run() {
-								// TODO: make this a separate activity, not just fragment. Don't want to show navbar or toolbar
-								setNewFragment(new OnboardingFragment());
+								getSupportActionBar().setTitle("Setup");
+								setNewFragment(new OnboardingFragment(), false);
+								mDrawerToggle.setDrawerIndicatorEnabled(false);
+								// TODO: reset the title again back to "wake"
 							}
 						});
 

@@ -9,11 +9,12 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 
 public class OnboardingFragment extends Fragment {
 
-	private AlarmAdapter mAlarmAdapter;
-	private RecyclerView mRecyclerView;
+	private Button mPrimaryUserButton;
+	private Button mSecondaryUserButton;
 
 	private OnboardingFragmentListener mListener;
 
@@ -23,11 +24,16 @@ public class OnboardingFragment extends Fragment {
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		View alarmView = inflater.inflate(R.layout.onboarding, container, false);
+		View mainView = inflater.inflate(R.layout.onboarding, container, false);
 		// set on clicker for set up
 		// set on clicker for associate
 		// set on clicker for
-		return alarmView;
+		mPrimaryUserButton = (Button) mainView.findViewById(R.id.primary_user_button);
+		mPrimaryUserButton.setOnClickListener(mListener.getPrimaryUserSelectedListener());
+
+		mPrimaryUserButton = (Button) mainView.findViewById(R.id.secondary_user_button);
+		mPrimaryUserButton.setOnClickListener(mListener.getSecondaryUserSelectedListener());
+		return mainView;
 	}
 
 	@Override
@@ -35,7 +41,6 @@ public class OnboardingFragment extends Fragment {
 		super.onAttach(context);
 		if (context instanceof OnboardingFragmentListener) {
 			mListener = (OnboardingFragmentListener) context;
-
 		} else {
 			throw new RuntimeException(context.toString()
 					+ " must implement OnFragmentInteractionListener");
@@ -46,7 +51,8 @@ public class OnboardingFragment extends Fragment {
 	public void onDetach() {
 		super.onDetach();
 		mListener = null;
-		mAlarmAdapter = null;
+		mPrimaryUserButton = null;
+		mSecondaryUserButton = null;
 	}
 
 	public interface OnboardingFragmentListener {
