@@ -24,6 +24,8 @@ import com.fasterxml.jackson.databind.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import io.particle.android.sdk.accountsetup.*;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.OkHttpClient;
@@ -286,7 +288,13 @@ public class MainActivity extends AppCompatActivity
 		} else if (id == R.id.nav_alarms) {
 			addAlarmButton.setVisibility(View.VISIBLE);
 			getFragmentManager().beginTransaction().replace(R.id.frame_content, new AlarmsFragment()).commit();
+		}else if (id == R.id.nav_sign_out) {
+			addAlarmButton.setVisibility(View.INVISIBLE);
+			CredentialsManager.deleteCredentials(getApplicationContext());
+			startActivity(new Intent(this, LoginActivity.class));
 		}
+
+
 
 		mDrawerLayout.closeDrawer(GravityCompat.START);
 		return true;

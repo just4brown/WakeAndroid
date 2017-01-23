@@ -10,6 +10,8 @@ import android.widget.Toast;
 
 import com.auth0.android.Auth0;
 import com.auth0.android.authentication.AuthenticationAPIClient;
+import com.auth0.android.authentication.AuthenticationException;
+import com.auth0.android.callback.BaseCallback;
 import com.auth0.android.google.GoogleAuthHandler;
 import com.auth0.android.google.GoogleAuthProvider;
 import com.auth0.android.lock.AuthenticationCallback;
@@ -17,6 +19,7 @@ import com.auth0.android.lock.Lock;
 import com.auth0.android.lock.LockCallback;
 import com.auth0.android.lock.utils.LockException;
 import com.auth0.android.result.Credentials;
+import com.auth0.android.result.UserProfile;
 import com.google.android.gms.appindexing.Action;
 import com.google.android.gms.appindexing.AppIndex;
 import com.google.android.gms.appindexing.Thing;
@@ -35,6 +38,8 @@ public class LoginActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        client2 = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
+
         Auth0 auth0 = new Auth0(getString(R.string.auth0_client_id), getString(R.string.auth0_domain));
         AuthenticationAPIClient client = new AuthenticationAPIClient(auth0);
 
@@ -49,10 +54,41 @@ public class LoginActivity extends AppCompatActivity {
                 //Add parameters to the builder
                 .withAuthHandlers(handler)
                 .build(this);
-        startActivity(mLock.newIntent(this));
+
+        if(CredentialsManager.getCredentials(this).getIdToken() == null){
+            startActivity(mLock.newIntent(this));
+            return;
+        }
+
+        //AuthenticationAPIClient aClient = new AuthenticationAPIClient(auth0);
+        client.tokenInfo(CredentialsManager.getCredentials(this).getIdToken())
+                .start(new BaseCallback<UserProfile, AuthenticationException>() {
+                    @Override
+                    public void onSuccess(final UserProfile payload) {
+                        LoginActivity.this.runOnUiThread(new Runnable() {
+                            public void run() {
+                                Toast.makeText(LoginActivity.this, "Automatic Login Success", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                        startActivity(new Intent(getApplicationContext(), MainActivity.class));
+                        finish();
+                    }
+
+                    @Override
+                    public void onFailure(AuthenticationException error) {
+                        LoginActivity.this.runOnUiThread(new Runnable() {
+                            public void run() {
+                                Toast.makeText(LoginActivity.this, "Session Expired, please Log In", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                        CredentialsManager.deleteCredentials(getApplicationContext());
+                        startActivity(mLock.newIntent(LoginActivity.this));
+                    }
+                });
+
         // ATTENTION: This was auto-generated to implement the App Indexing API.
         // See https://g.co/AppIndexing/AndroidStudio for more information.
-        client2 = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
+
     }
 
     @Override
@@ -67,9 +103,16 @@ public class LoginActivity extends AppCompatActivity {
         @Override
         public void onAuthentication(Credentials credentials) {
             Toast.makeText(getApplicationContext(), "Log In - Success", Toast.LENGTH_SHORT).show();
-            Intent mainApplicationIntent = new Intent(getApplicationContext(), MainActivity.class);
-            mainApplicationIntent.putExtra("AUTH_ID_TOKEN", credentials.getIdToken());
-            startActivity(mainApplicationIntent);
+            CredentialsManager.saveCredentials(getApplicationContext(), credentials);
+
+//            Intent mainApplicationIntent = new Intent(getApplicationContext(), MainActivity.class);
+//
+//            mainApplicationIntent.putExtra("AUTH_ID_TOKEN", credentials.getIdToken());
+//
+//            startActivity(mainApplicationIntent);
+
+            startActivity(new Intent(LoginActivity.this, MainActivity.class));
+
             finish();
         }
 
