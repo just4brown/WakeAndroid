@@ -68,6 +68,7 @@ public class LoginActivity extends AppCompatActivity {
                         LoginActivity.this.runOnUiThread(new Runnable() {
                             public void run() {
                                 Toast.makeText(LoginActivity.this, "Automatic Login Success", Toast.LENGTH_SHORT).show();
+
                             }
                         });
                         startActivity(new Intent(getApplicationContext(), MainActivity.class));

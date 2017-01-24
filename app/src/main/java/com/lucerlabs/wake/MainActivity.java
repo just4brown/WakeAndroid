@@ -17,6 +17,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.TimePicker;
 import android.support.v4.widget.DrawerLayout;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -65,8 +66,11 @@ public class MainActivity extends AppCompatActivity
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		Bundle extras = getIntent().getExtras();
-		authIdToken = extras.getString("AUTH_ID_TOKEN");
+		//Bundle extras = getIntent().getExtras();
+		//authIdToken = extras.getString("AUTH_ID_TOKEN");
+
+		authIdToken = CredentialsManager.getCredentials(this).getIdToken();
+
 		setContentView(R.layout.activity_main);
 
 		mainActivity = this;
@@ -94,6 +98,14 @@ public class MainActivity extends AppCompatActivity
 		NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
 		navigationView.setNavigationItemSelectedListener(this);
 		navigationView.setCheckedItem(R.id.nav_alarms);
+
+		// Set user info in sidebar
+
+		TextView mTextView = (TextView) navigationView.getHeaderView(0).findViewById(R.id.nav_name);
+		mTextView.setText("Bro");
+		mTextView = (TextView) navigationView.getHeaderView(0).findViewById(R.id.nav_email);
+		mTextView.setText("Bro@bro.com");
+
 
 		final TimePickerDialog.OnTimeSetListener timePickerListener = new TimePickerDialog.OnTimeSetListener() {
 			@Override
@@ -381,6 +393,7 @@ public class MainActivity extends AppCompatActivity
 		httpClient.newCall(BuildPostAlarmsRequest(mAlarms, this.authIdToken)).enqueue(new Callback() {
 			@Override
 			public void onResponse(Call call, final Response response) throws IOException {
+				Log.e("HTTP STATUS CODE", Integer.toString(response.code()));
 				if (response.isSuccessful()) {
 
 				}
