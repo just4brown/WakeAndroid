@@ -78,8 +78,8 @@ public class SettingsFragment extends PreferenceFragment {
 
 	public interface SettingsFragmentListener {
 		void setNewFragment(Fragment fragment, boolean showBackButton);
-		void postSideOfBedPreference();
-
+		void postSideOfBedPreference(String sideOfBed);
+		void postTimezone(String timezone);
 		void startParticleSetup();
 	}
 }

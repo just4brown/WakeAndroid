@@ -29,7 +29,9 @@ public class OnboardingSettingsFragment extends PreferenceFragment {
 		mListPreference.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
 			@Override
 			public boolean onPreferenceChange(Preference preference, Object newValue) {
-				preference.setSummary(newValue.toString());
+				String sideOfBed = newValue.toString();
+				preference.setSummary(sideOfBed);
+				mListener.postSideOfBedPreference(sideOfBed);
 				return true;
 			}
 		});
@@ -59,7 +61,9 @@ public class OnboardingSettingsFragment extends PreferenceFragment {
 		connection.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
 			@Override
 			public boolean onPreferenceChange(Preference preference, Object newValue) {
-				preference.setSummary(newValue.toString());
+				String timezone = newValue.toString();
+				preference.setSummary(timezone);
+				mListener.postTimezone(timezone);
 				return true;
 			}
 		});

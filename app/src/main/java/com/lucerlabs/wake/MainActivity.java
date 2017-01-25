@@ -57,6 +57,7 @@ public class MainActivity extends AppCompatActivity
 	private ActionBarDrawerToggle mDrawerToggle;
 	private ListView mDrawerList;
 	private FloatingActionButton addAlarmButton;
+	private UserDto mCurrentUser;
 
 	// Notification stuff
 	public static MainActivity mainActivity;
@@ -229,8 +230,26 @@ public class MainActivity extends AppCompatActivity
 	}
 
 	@Override
-	public void postSideOfBedPreference() {
+	public void postSideOfBedPreference(String sideOfBed) {
+		String sideOfBedValue = "";
+		if (sideOfBed.contentEquals("Left side")) {
+			sideOfBedValue = "S";
+		} else if (sideOfBed.contentEquals("Right side")) {
+			sideOfBedValue = "P";
+		} else if (sideOfBed.contentEquals("I have the bed to myself")) {
+			sideOfBedValue = "N";
+		}
 
+		if (!sideOfBedValue.isEmpty()) {
+			mCurrentUser.setSideOfBed(sideOfBedValue);
+			putUserAsync();
+		}
+	}
+
+	@Override
+	public void postTimezone(String timezone) {
+		mCurrentUser.setTimezone(timezone);
+		putUserAsync();
 	}
 
 	@Override
@@ -357,6 +376,8 @@ public class MainActivity extends AppCompatActivity
 					ObjectMapper mapper = new ObjectMapper();
 					final UserDto user = mapper.readValue(rawJsonData, UserDto.class);
 
+					mCurrentUser = user;
+
 					if (user.isRegistered()) {
 						// TODO: set user name/email/icon in nav drawer
 						getAlarmsAsync();
@@ -409,6 +430,26 @@ public class MainActivity extends AppCompatActivity
 		});
 	}
 
+	public void putUserAsync() {
+		httpClient.newCall(BuildPutUserRequest(mCurrentUser, this.authIdToken)).enqueue(new Callback() {
+			@Override
+			public void onResponse(Call call, final Response response) throws IOException {
+				Log.e("HTTP STATUS CODE", Integer.toString(response.code()));
+				if (response.isSuccessful()) {
+
+				}
+				else {
+					throw new IOException("Http failure");
+				}
+			}
+
+			@Override
+			public void onFailure(Call call, IOException e) {
+				e.printStackTrace();
+			}
+		});
+	}
+
 	private static Request BuildGetAlarmsRequest(String authId) {
 		return new Request.Builder()
 			.header("Authorization", "bearer " + authId)
@@ -423,6 +464,24 @@ public class MainActivity extends AppCompatActivity
 			.header("Content-Type","application/json")
 			.url("http://wakeuserapi.azurewebsites.net/v1/users")
 			.build();
+	}
+
+	private static Request BuildPutUserRequest(UserDto user, String authId) {
+		ObjectMapper objectMapper = new ObjectMapper();
+		final ObjectWriter w = objectMapper.writer();
+		try {
+			byte[] json = w.writeValueAsBytes(user);
+
+			return new Request.Builder()
+					.header("Authorization", "bearer " + authId)
+					.header("Content-Type","application/json")
+					.put(RequestBody.create(MEDIA_TYPE_JSON, json))
+					.url("http://wakeuserapi.azurewebsites.net/v1/users")
+					.build();
+		} catch (JsonProcessingException e) {
+			e.printStackTrace();
+			return new Request.Builder().build();
+		}
 	}
 
 	private static Request BuildPostAlarmsRequest(ObservableArrayList<Alarm> alarms, String authId) {
