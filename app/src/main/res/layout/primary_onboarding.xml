@@ -54,13 +54,13 @@
             android:text="@string/onboarding_primary_back"
             android:layout_width="256dp"
             android:layout_height="wrap_content"
-            android:id="@+id/primary_user_button"/>
+            android:id="@+id/back_button"/>
 
         <Button
             android:text="@string/onboarding_primary_finish"
             android:layout_width="256dp"
             android:layout_height="wrap_content"
-            android:id="@+id/button3"/>
+            android:id="@+id/finish_button"/>
 
     </LinearLayout>
 </LinearLayout>

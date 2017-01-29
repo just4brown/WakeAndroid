@@ -6,10 +6,13 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 
 public class PrimaryOnboardingFragment extends Fragment {
 
 	private PrimaryOnboardingFragmentListener mListener;
+	private Button mBackButton;
+	private Button mFinishButton;
 
 	public PrimaryOnboardingFragment() {
 		// Required empty public constructor
@@ -18,9 +21,12 @@ public class PrimaryOnboardingFragment extends Fragment {
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View mainView = inflater.inflate(R.layout.primary_onboarding, container, false);
-		// set on clicker for set up
-		// set on clicker for associate
-		// set on clicker for
+
+		mFinishButton = (Button) mainView.findViewById(R.id.finish_button);
+		mFinishButton.setOnClickListener(mListener.finishOnboardingClickListener());
+
+		mBackButton = (Button) mainView.findViewById(R.id.back_button);
+		mBackButton.setOnClickListener(mListener.goBackClickListener());
 		return mainView;
 	}
 
@@ -29,7 +35,7 @@ public class PrimaryOnboardingFragment extends Fragment {
 		super.onAttach(context);
 		if (context instanceof PrimaryOnboardingFragmentListener) {
 			mListener = (PrimaryOnboardingFragmentListener) context;
-			// getFragmentManager().beginTransaction().replace(R.id.onboarding_settings_fragment, new OnboardingSettingsFragment()).commit();
+
 		} else {
 			throw new RuntimeException(context.toString()
 					+ " must implement OnFragmentInteractionListener");
@@ -43,9 +49,8 @@ public class PrimaryOnboardingFragment extends Fragment {
 	}
 
 	public interface PrimaryOnboardingFragmentListener {
-		// go back
-		// finish, move on to main activity
-		void completePrimaryUserOnboarding();
+		View.OnClickListener finishOnboardingClickListener();
+		View.OnClickListener goBackClickListener();
 	}
 }
 

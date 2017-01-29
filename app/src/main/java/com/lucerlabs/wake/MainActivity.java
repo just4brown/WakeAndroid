@@ -1,8 +1,11 @@
 package com.lucerlabs.wake;
 
+import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.app.TimePickerDialog;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.databinding.ObservableArrayList;
 import android.os.Bundle;
@@ -13,8 +16,10 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -215,6 +220,7 @@ public class MainActivity extends AppCompatActivity
 	public void setNewFragment(Fragment fragment, boolean showBackButton) {
 		mDrawerToggle.setDrawerIndicatorEnabled(false);
 		FragmentTransaction newFragmentTransaction = getFragmentManager().beginTransaction().replace(R.id.frame_content, fragment);
+		addAlarmButton.setVisibility(View.INVISIBLE);
 		if (showBackButton) {
 			newFragmentTransaction.addToBackStack(null);
 			mDrawerToggle.setHomeAsUpIndicator(R.drawable.ic_arrow_back_black_24dp);
@@ -253,13 +259,36 @@ public class MainActivity extends AppCompatActivity
 	}
 
 	@Override
-	public void completePrimaryUserOnboarding() {
-		// if (currentUser.hasParticleCcode == null) { show alert dialog "not connected to wake" }
-		// if (currentUser.sideOfBed == null) { show alert dialog "must select bedside" }
-		// since timezone is automatically detected, we won't require the user to select a timezone
+	public View.OnClickListener finishOnboardingClickListener() {
+		return new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				// if (currentUser.hasParticleCcode == null || currentUser.sideOfBed == null) {
+					// show error dialog "not connected to wake" || "must select bedside"
+					// buildOnboardingErrorDialog
+					// show it
+				// }
+
+				// since timezone is automatically detected, we won't require the user to select a timezone
+				// don't forget to post the timezone though if its still null
+				
+
+			}
+		};
+
 
 
 		// TODO: show popup confirming to user that he/she agrees to terms and conditions
+	}
+
+	@Override
+	public View.OnClickListener goBackClickListener() {
+		return new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				onBackPressed();
+			}
+		};
 	}
 
 	@Override
@@ -507,6 +536,38 @@ public class MainActivity extends AppCompatActivity
 			e.printStackTrace();
 			return new Request.Builder().build();
 		}
+	}
+
+	private void buildOnboardingErrorDialog(Context context) {
+		// Something like the code below
+
+		/*
+		AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(context);
+		LayoutInflater inflater = LayoutInflater.from(context);
+		View editorView = inflater.inflate(R.layout.label_edit_dialog, null);
+		dialogBuilder.setView(editorView);
+		final EditText input = (EditText) editorView.findViewById(R.id.input);
+
+
+		dialogBuilder
+				.setPositiveButton("OK",
+						new DialogInterface.OnClickListener() {
+							public void onClick(DialogInterface dialog, int id) {
+								String currentText = input.getText().toString();
+								if (currentText.length() > 0) {
+									setLabel(currentText);
+								}
+							}
+						})
+				.setNegativeButton("Cancel",
+						new DialogInterface.OnClickListener() {
+							public void onClick(DialogInterface dialog, int id) {
+								dialog.cancel();
+							}
+						});
+
+		mLabelEditorDialog = dialogBuilder.create();
+		*/
 	}
 
 	private static Alarm mapAlarm(AlarmDto alarmDto) {
