@@ -56,7 +56,7 @@ public class SettingsFragment extends PreferenceFragment {
 		timezone.setSummary(TimeZone.getDefault().getID());
 		timezone.setEntries(TimeZone.getAvailableIDs());
 		timezone.setEntryValues(TimeZone.getAvailableIDs());
-		connection.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+		timezone.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
 			@Override
 			public boolean onPreferenceChange(Preference preference, Object newValue) {
 				preference.setSummary(newValue.toString());

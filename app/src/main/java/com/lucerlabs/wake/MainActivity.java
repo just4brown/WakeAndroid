@@ -469,8 +469,9 @@ public class MainActivity extends AppCompatActivity
 	private static Request BuildPutUserRequest(UserDto user, String authId) {
 		ObjectMapper objectMapper = new ObjectMapper();
 		final ObjectWriter w = objectMapper.writer();
+		UserBody body = new UserBody(user);
 		try {
-			byte[] json = w.writeValueAsBytes(user);
+			byte[] json = w.writeValueAsBytes(body);
 
 			return new Request.Builder()
 					.header("Authorization", "bearer " + authId)
