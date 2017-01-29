@@ -13,10 +13,8 @@ import android.text.format.DateFormat;
 import android.text.style.RelativeSizeSpan;
 import android.text.style.StyleSpan;
 import android.text.style.TypefaceSpan;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -41,6 +39,7 @@ public class AlarmViewModel extends BaseObservable {
 	private View mAlarmDetails;
 	private LinearLayout mDaysContainer;
 	private String mDurationStatus;
+	private final AlarmsFragment.AlarmFragmentListener mAlarmOnChange;
 	private final TimePickerDialog.OnTimeSetListener timePickerListener = new TimePickerDialog.OnTimeSetListener() {
 		@Override
 		public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
@@ -50,12 +49,14 @@ public class AlarmViewModel extends BaseObservable {
 				mAlarm.setMinute(minute);
 				notifyChange();
 				updateTime();
+				mAlarmOnChange.postAlarms();
 			}
 		}
 	};
 
-	public AlarmViewModel(Context context) {
+	public AlarmViewModel(Context context, AlarmsFragment.AlarmFragmentListener changeHandler) {
 		mContext = context;
+		mAlarmOnChange = changeHandler;
 		mFormat12 = get12ModeFormat(0.001f /* amPmRatio */);
 		mTimePicker = new TimePickerDialog(mContext, timePickerListener, 9, 0, false);
 		initLabelEditorDialog(mContext);
@@ -64,6 +65,7 @@ public class AlarmViewModel extends BaseObservable {
 	}
 
 	public void onTimeClick() {
+		mTimePicker.updateTime(mAlarm.getHour(), mAlarm.getMinute());
 		mTimePicker.show();
 	}
 
@@ -116,6 +118,7 @@ public class AlarmViewModel extends BaseObservable {
 	public void setEnabled(Boolean enabled) {
 		mAlarm.setEnabled(enabled);
 		notifyPropertyChanged(com.lucerlabs.wake.BR.enabled);
+		mAlarmOnChange.postAlarms();
 	}
 
 	@Bindable
@@ -171,13 +174,8 @@ public class AlarmViewModel extends BaseObservable {
 	}
 
 	public void setBrightness(int value) {
-		// How should we manage the "isSynchronized" flag?
-		// For now, any change to the alarm triggered by a user action will clear the alarm's isSynchronized flag.
-		// Potential issue: what happens if a user makes a change, then reverts it before the alarms is posted,
-		// should we be smart about that and enusre that fields have actually changed before marking an alarm
-		// as not synchronized?
-		mAlarm.setSynchronized(false);
 		mAlarm.setBrightness(value);
+		mAlarmOnChange.postAlarms();
 	}
 
 	public int getBrightness() {
@@ -185,8 +183,8 @@ public class AlarmViewModel extends BaseObservable {
 	}
 
 	public void setVolume(int value) {
-		mAlarm.setSynchronized(false);
 		mAlarm.setVolume(value);
+		mAlarmOnChange.postAlarms();
 	}
 
 	public int getVolume() {
@@ -194,9 +192,9 @@ public class AlarmViewModel extends BaseObservable {
 	}
 
 	public void setDuration(int value) {
-		mAlarm.setSynchronized(false);
 		mAlarm.setDuration(value);
 		updateDurationStatus();
+		mAlarmOnChange.postAlarms();
 	}
 
 	public int getDuration() {
@@ -211,6 +209,7 @@ public class AlarmViewModel extends BaseObservable {
 	public void setLabel(String label) {
 		mAlarm.setLabel(label);
 		notifyPropertyChanged(com.lucerlabs.wake.BR.label);
+		mAlarmOnChange.postAlarms();
 	}
 
 	private void updateTime() {
@@ -249,7 +248,7 @@ public class AlarmViewModel extends BaseObservable {
 					} else {
 						mAlarm.removeDay(dayWidget.getDayOfWeek());
 					}
-
+					mAlarmOnChange.postAlarms();
 				}
 			});
 			mDaysContainer.addView(d, dayButtonLayoutParams);

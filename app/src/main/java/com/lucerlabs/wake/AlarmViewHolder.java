@@ -24,10 +24,10 @@ public class AlarmViewHolder extends RecyclerView.ViewHolder {
 	private final AlarmViewModel mAlarmViewModel;
 	private final Pattern mDurationPattern = Pattern.compile("(\\d*)");
 
-	public AlarmViewHolder(Context context, AlarmBinding binding) {
+	public AlarmViewHolder(Context context, AlarmBinding binding, AlarmsFragment.AlarmFragmentListener changeHandler) {
 		super(binding.mainLayout);
 		mBinding = binding;
-		mAlarmViewModel = new AlarmViewModel(context);
+		mAlarmViewModel = new AlarmViewModel(context, changeHandler);
 		mBinding.setAlarm(mAlarmViewModel);
 
 		// Where should these initializations live?

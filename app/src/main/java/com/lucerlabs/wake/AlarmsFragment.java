@@ -14,7 +14,6 @@ public class AlarmsFragment extends Fragment {
 
 	private AlarmAdapter mAlarmAdapter;
 	private RecyclerView mRecyclerView;
-
 	private AlarmFragmentListener mListener;
 
 	public AlarmsFragment() {
@@ -35,7 +34,7 @@ public class AlarmsFragment extends Fragment {
 		super.onAttach(context);
 		if (context instanceof AlarmFragmentListener) {
 			mListener = (AlarmFragmentListener) context;
-			mAlarmAdapter = new AlarmAdapter(mListener.getObservableAlarms());
+			mAlarmAdapter = new AlarmAdapter(mListener.getObservableAlarms(), mListener);
 		} else {
 			throw new RuntimeException(context.toString()
 					+ " must implement OnFragmentInteractionListener");
@@ -51,5 +50,6 @@ public class AlarmsFragment extends Fragment {
 
 	public interface AlarmFragmentListener {
 		ObservableArrayList<Alarm> getObservableAlarms();
+		void postAlarms();
 	}
 }

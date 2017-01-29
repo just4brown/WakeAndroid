@@ -130,14 +130,6 @@ public class MainActivity extends AppCompatActivity
 			}
 		});
 
-		ImageButton cloudUpload = (ImageButton) findViewById(R.id.upload_button);
-		cloudUpload.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				postAlarmsAsync();
-			}
-		});
-
 		mAlarms = new ObservableArrayList<Alarm>();
 		getFragmentManager().beginTransaction().add(R.id.frame_content, new AlarmsFragment()).commit();
 
@@ -397,6 +389,11 @@ public class MainActivity extends AppCompatActivity
 		return true;
 	}
 
+	@Override
+	public void postAlarms() {
+		postAlarmsAsync();
+	}
+
 	public void getAlarmsAsync() {
 		httpClient.newCall(BuildGetAlarmsRequest(this.authIdToken)).enqueue(new Callback() {
 			@Override
@@ -413,6 +410,7 @@ public class MainActivity extends AppCompatActivity
 					runOnUiThread(new Runnable() {
 						@Override
 						public void run() {
+							mAlarms.clear();
 							for (AlarmDto alarmDto : result.getAlarms()) {
 								mAlarms.add(mapAlarm(alarmDto));
 							}

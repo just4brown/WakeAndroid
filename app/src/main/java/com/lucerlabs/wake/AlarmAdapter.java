@@ -13,9 +13,11 @@ import com.lucerlabs.wake.databinding.AlarmBinding;
 public class AlarmAdapter extends RecyclerView.Adapter<AlarmViewHolder> {
 	private ObservableArrayList<Alarm> mAlarms;
 	private final ObservableList.OnListChangedCallback<ObservableList<AlarmViewModel>> onListChangedCallback;
+	private final AlarmsFragment.AlarmFragmentListener mAlarmOnChange;
 
-	public AlarmAdapter(ObservableArrayList<Alarm> alarms) {
+	public AlarmAdapter(ObservableArrayList<Alarm> alarms, AlarmsFragment.AlarmFragmentListener changeHandler) {
 		mAlarms = alarms;
+		mAlarmOnChange = changeHandler;
 		onListChangedCallback = new ObservableList.OnListChangedCallback<ObservableList<AlarmViewModel>>() {
 			@Override public void onChanged(ObservableList<AlarmViewModel> sender) {
 				notifyDataSetChanged();
@@ -41,11 +43,11 @@ public class AlarmAdapter extends RecyclerView.Adapter<AlarmViewHolder> {
 	}
 
 	@Override
-	public AlarmViewHolder onCreateViewHolder (ViewGroup parent, int viewType) {
+	public AlarmViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
 		Context context = parent.getContext();
 		LayoutInflater inflater = LayoutInflater.from(context);
 		AlarmBinding alarm = AlarmBinding.inflate(inflater, parent, false);
-		return new AlarmViewHolder(context, alarm);
+		return new AlarmViewHolder(context, alarm, mAlarmOnChange);
 	}
 
 	@Override
