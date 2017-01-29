@@ -263,6 +263,43 @@ public class MainActivity extends AppCompatActivity
 		return new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
+
+				AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(MainActivity.this);
+				LayoutInflater inflater = LayoutInflater.from(MainActivity.this);
+//		View editorView = inflater.inflate(R.layout.label_edit_dialog, null);
+//		dialogBuilder.setView(editorView);
+				//final EditText input = (EditText) editorView.findViewById(R.id.input);
+
+
+				dialogBuilder
+						.setMessage("test")
+						.setPositiveButton("OK",
+								new DialogInterface.OnClickListener() {
+									public void onClick(DialogInterface dialog, int id) {
+										dialog.cancel();
+									}
+								});
+
+				dialogBuilder.create();
+
+				// Check Wake Device
+
+				if(mCurrentUser.getCoreID() == null || mCurrentUser.getCoreID() == ""){
+
+				}
+
+				// Check Side of Bed
+
+				if(mCurrentUser.getSideOfBed() == null || mCurrentUser.getSideOfBed() == ""){
+
+				}
+
+				// Check time zone
+
+				if(mCurrentUser.getTimezone() == null || mCurrentUser.getTimezone() == ""){
+
+				}
+
 				// if (currentUser.hasParticleCcode == null || currentUser.sideOfBed == null) {
 					// show error dialog "not connected to wake" || "must select bedside"
 					// buildOnboardingErrorDialog
@@ -538,36 +575,26 @@ public class MainActivity extends AppCompatActivity
 		}
 	}
 
-	private void buildOnboardingErrorDialog(Context context) {
-		// Something like the code below
+	private void buildOnboardingErrorDialog(Context context, String errorText) {
 
-		/*
 		AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(context);
 		LayoutInflater inflater = LayoutInflater.from(context);
-		View editorView = inflater.inflate(R.layout.label_edit_dialog, null);
-		dialogBuilder.setView(editorView);
-		final EditText input = (EditText) editorView.findViewById(R.id.input);
+//		View editorView = inflater.inflate(R.layout.label_edit_dialog, null);
+//		dialogBuilder.setView(editorView);
+		//final EditText input = (EditText) editorView.findViewById(R.id.input);
 
 
 		dialogBuilder
+				.setMessage(errorText)
 				.setPositiveButton("OK",
-						new DialogInterface.OnClickListener() {
-							public void onClick(DialogInterface dialog, int id) {
-								String currentText = input.getText().toString();
-								if (currentText.length() > 0) {
-									setLabel(currentText);
-								}
-							}
-						})
-				.setNegativeButton("Cancel",
 						new DialogInterface.OnClickListener() {
 							public void onClick(DialogInterface dialog, int id) {
 								dialog.cancel();
 							}
 						});
 
-		mLabelEditorDialog = dialogBuilder.create();
-		*/
+		dialogBuilder.create();
+
 	}
 
 	private static Alarm mapAlarm(AlarmDto alarmDto) {
