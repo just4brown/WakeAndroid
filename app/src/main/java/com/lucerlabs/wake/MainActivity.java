@@ -134,6 +134,11 @@ public class MainActivity extends AppCompatActivity
 		getFragmentManager().beginTransaction().add(R.id.frame_content, new AlarmsFragment()).commit();
 
 		ParticleDeviceSetupLibrary.init(this.getApplicationContext(), MainActivity.class);
+
+		String deviceId = this.getIntent().getStringExtra("configuredDeviceId");
+		if (deviceId != null && deviceId.length() > 0) {
+			postDeviceId(deviceId);
+		}
 	}
 
 	@Override
@@ -153,6 +158,11 @@ public class MainActivity extends AppCompatActivity
 	protected void onResume() {
 		super.onResume();
 		isVisible = true;
+
+		String deviceId = this.getIntent().getStringExtra("configuredDeviceId");
+		if (deviceId != null && deviceId.length() > 0) {
+			postDeviceId(deviceId);
+		}
 	}
 
 	@Override
@@ -225,6 +235,16 @@ public class MainActivity extends AppCompatActivity
 	@Override
 	public void startParticleSetup() {
 		ParticleDeviceSetupLibrary.startDeviceSetup(this, new WakeParticleSetupCompleteIntentBuilder());
+	}
+
+	public void postDeviceId(String deviceId) {
+		if (deviceId == null || deviceId.length() == 0) {
+			Log.e("ERROR", " emty deviceId");
+		}
+
+		mCurrentUser.setParticleToken(deviceId);
+		Log.e("Particle Device Id", deviceId);
+		putUserAsync();
 	}
 
 	@Override

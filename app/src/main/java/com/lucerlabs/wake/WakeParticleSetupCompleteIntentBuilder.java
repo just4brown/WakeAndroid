@@ -2,6 +2,7 @@ package com.lucerlabs.wake;
 
 import android.content.Context;
 import android.content.Intent;
+import android.util.Log;
 
 import io.particle.android.sdk.devicesetup.SetupCompleteIntentBuilder;
 import io.particle.android.sdk.devicesetup.SetupResult;
@@ -13,8 +14,12 @@ public class WakeParticleSetupCompleteIntentBuilder implements SetupCompleteInte
 
 	@Override
 	public Intent buildIntent(Context ctx, SetupResult result) {
-		Intent intent = new Intent(ctx, MainActivity.class);
+		if (!result.wasSuccessful()) {
+			Log.e("ERROR", " Particle setup failed!");
+		}
 
+		Intent intent = new Intent(ctx, MainActivity.class);
+		intent.putExtra("configuredDeviceId", result.getConfiguredDeviceId());
 		return intent;
 	}
 }
