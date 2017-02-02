@@ -11,6 +11,7 @@ import android.databinding.ObservableArrayList;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.view.GravityCompat;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
@@ -19,6 +20,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ListView;
@@ -30,6 +32,7 @@ import com.fasterxml.jackson.databind.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.TimeZone;
 
 import io.particle.android.sdk.accountsetup.*;
 import okhttp3.Call;
@@ -63,6 +66,8 @@ public class MainActivity extends AppCompatActivity
 	private ListView mDrawerList;
 	private FloatingActionButton addAlarmButton;
 	private UserDto mCurrentUser;
+	private AlertDialog mErrorDialog;
+	private AlertDialog mConfirmationDialog;
 
 	// Notification stuff
 	public static MainActivity mainActivity;
@@ -129,6 +134,9 @@ public class MainActivity extends AppCompatActivity
 				newAlarmDialog.show();
 			}
 		});
+
+		mErrorDialog = new AlertDialog.Builder(this).create();
+		mConfirmationDialog = buildConfirmationDialog(this);
 
 		mAlarms = new ObservableArrayList<Alarm>();
 		getFragmentManager().beginTransaction().add(R.id.frame_content, new AlarmsFragment()).commit();
@@ -275,58 +283,31 @@ public class MainActivity extends AppCompatActivity
 		return new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
-
-				AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(MainActivity.this);
-				LayoutInflater inflater = LayoutInflater.from(MainActivity.this);
-//		View editorView = inflater.inflate(R.layout.label_edit_dialog, null);
-//		dialogBuilder.setView(editorView);
-				//final EditText input = (EditText) editorView.findViewById(R.id.input);
-
-
-				dialogBuilder
-						.setMessage("test")
-						.setPositiveButton("OK",
-								new DialogInterface.OnClickListener() {
-									public void onClick(DialogInterface dialog, int id) {
-										dialog.cancel();
-									}
-								});
-
-				dialogBuilder.create();
-
-				// Check Wake Device
-
-				if(mCurrentUser.getCoreID() == null || mCurrentUser.getCoreID() == ""){
-
+				if (mCurrentUser.getCoreID() == null || mCurrentUser.getCoreID().isEmpty()) {
+					mErrorDialog.setTitle("Error");
+					mErrorDialog.setMessage(getResources().getString(R.string.error_no_core_id));
+					mErrorDialog.show();
+					return;
 				}
 
-				// Check Side of Bed
-
-				if(mCurrentUser.getSideOfBed() == null || mCurrentUser.getSideOfBed() == ""){
-
+				if (mCurrentUser.getSideOfBed() == null || mCurrentUser.getSideOfBed().isEmpty()){
+					mErrorDialog.setTitle("Error");
+					mErrorDialog.setMessage(getResources().getString(R.string.error_no_side_of_bed));
+					mErrorDialog.show();
+					return;
 				}
 
-				// Check time zone
-
-				if(mCurrentUser.getTimezone() == null || mCurrentUser.getTimezone() == ""){
-
+				if (mCurrentUser.getTimezone() == null || mCurrentUser.getTimezone().isEmpty()){
+					mCurrentUser.setTimezone(TimeZone.getDefault().getID());
 				}
 
-				// if (currentUser.hasParticleCcode == null || currentUser.sideOfBed == null) {
-					// show error dialog "not connected to wake" || "must select bedside"
-					// buildOnboardingErrorDialog
-					// show it
-				// }
+				mCurrentUser.setIsRegistered(true);
+				mCurrentUser.setIsPrimaryUser(true);
 
-				// since timezone is automatically detected, we won't require the user to select a timezone
-				// don't forget to post the timezone though if its still null
-				
-
+				putUserAsync();
+				mConfirmationDialog.show();
 			}
 		};
-
-
-
 		// TODO: show popup confirming to user that he/she agrees to terms and conditions
 	}
 
@@ -345,9 +326,7 @@ public class MainActivity extends AppCompatActivity
 		return new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
-				if (!mDrawerToggle.isDrawerIndicatorEnabled()) {
-					onBackPressed();
-				}
+				doSignOut();
 			}
 		};
 	}
@@ -399,11 +378,8 @@ public class MainActivity extends AppCompatActivity
 			getFragmentManager().beginTransaction().replace(R.id.frame_content, new AlarmsFragment()).commit();
 		}else if (id == R.id.nav_sign_out) {
 			addAlarmButton.setVisibility(View.INVISIBLE);
-			CredentialsManager.deleteCredentials(getApplicationContext());
-			startActivity(new Intent(this, LoginActivity.class));
+			doSignOut();
 		}
-
-
 
 		mDrawerLayout.closeDrawer(GravityCompat.START);
 		return true;
@@ -412,6 +388,11 @@ public class MainActivity extends AppCompatActivity
 	@Override
 	public void postAlarms() {
 		postAlarmsAsync();
+	}
+
+	@Override
+	public void dismissAlarms() {
+		dismissAlarmsAsync();
 	}
 
 	public void getAlarmsAsync() {
@@ -465,6 +446,12 @@ public class MainActivity extends AppCompatActivity
 					if (user.isRegistered()) {
 						// TODO: set user name/email/icon in nav drawer
 						getAlarmsAsync();
+						runOnUiThread(new Runnable() {
+							@Override
+							public void run() {
+								initAlarmFragment();
+							}
+						});
 					}
 
 					else {
@@ -534,6 +521,50 @@ public class MainActivity extends AppCompatActivity
 		});
 	}
 
+	public void dismissAlarmsAsync() {
+		httpClient.newCall(
+			new Request.Builder()
+				.header("Authorization", "bearer " + this.authIdToken)
+				.header("Content-Type","application/json")
+				.delete()
+				.url("http://wakeuserapi.azurewebsites.net/v1/alarms/active")
+				.build())
+			.enqueue(new Callback() {
+				@Override
+				public void onResponse(Call call, final Response response) throws IOException {
+					Log.e("HTTP STATUS CODE", Integer.toString(response.code()));
+					if (response.isSuccessful()) {
+
+					}
+					else {
+						throw new IOException("Http failure");
+					}
+				}
+
+				@Override
+				public void onFailure(Call call, IOException e) {
+					e.printStackTrace();
+				}
+		});
+	}
+
+	private void doSignOut() {
+		CredentialsManager.deleteCredentials(getApplicationContext());
+		startActivity(new Intent(this, LoginActivity.class));
+	}
+
+	private void initAlarmFragment() {
+		mDrawerToggle.setDrawerIndicatorEnabled(false);
+		FragmentTransaction newFragmentTransaction = getFragmentManager().beginTransaction().replace(R.id.frame_content, new AlarmsFragment());
+		addAlarmButton.setVisibility(View.VISIBLE);
+		getFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+		mDrawerToggle.setDrawerIndicatorEnabled(true);
+		mDrawerToggle.setHomeAsUpIndicator(0);
+		getSupportActionBar().setTitle(getResources().getString(R.string.app_name));
+		mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
+		newFragmentTransaction.commit();
+	}
+
 	private static Request BuildGetAlarmsRequest(String authId) {
 		return new Request.Builder()
 			.header("Authorization", "bearer " + authId)
@@ -593,26 +624,27 @@ public class MainActivity extends AppCompatActivity
 		}
 	}
 
-	private void buildOnboardingErrorDialog(Context context, String errorText) {
-
+	private AlertDialog buildConfirmationDialog(Context context) {
 		AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(context);
-		LayoutInflater inflater = LayoutInflater.from(context);
-//		View editorView = inflater.inflate(R.layout.label_edit_dialog, null);
-//		dialogBuilder.setView(editorView);
-		//final EditText input = (EditText) editorView.findViewById(R.id.input);
 
-
-		dialogBuilder
-				.setMessage(errorText)
-				.setPositiveButton("OK",
-						new DialogInterface.OnClickListener() {
-							public void onClick(DialogInterface dialog, int id) {
-								dialog.cancel();
-							}
-						});
-
-		dialogBuilder.create();
-
+		return dialogBuilder
+			.setTitle(getResources().getString(R.string.more_info_section_terms))
+			.setMessage(getResources().getString(R.string.terms_confirmation_statement))
+			.setPositiveButton("Agree",
+				new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int id) {
+						initAlarmFragment();
+						dialog.cancel();
+					}
+				})
+			.setNegativeButton("Disagree",
+				new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int id) {
+						doSignOut();
+						dialog.cancel();
+					}
+				})
+			.create();
 	}
 
 	private static Alarm mapAlarm(AlarmDto alarmDto) {

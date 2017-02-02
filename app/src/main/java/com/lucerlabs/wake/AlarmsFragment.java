@@ -9,12 +9,14 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 
 public class AlarmsFragment extends Fragment {
 
 	private AlarmAdapter mAlarmAdapter;
 	private RecyclerView mRecyclerView;
 	private AlarmFragmentListener mListener;
+	private Button mDismissButton;
 
 	public AlarmsFragment() {
 		// Required empty public constructor
@@ -26,6 +28,14 @@ public class AlarmsFragment extends Fragment {
 		mRecyclerView = (RecyclerView) alarmView.findViewById(R.id.alarms);
 		mRecyclerView.setLayoutManager(new LinearLayoutManager(container.getContext()));
 		mRecyclerView.setAdapter(mAlarmAdapter);
+
+		mDismissButton = (Button) alarmView.findViewById(R.id.dismiss_alarms_button);
+		mDismissButton.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				mListener.dismissAlarms();
+			}
+		});
 		return alarmView;
 	}
 
@@ -51,5 +61,6 @@ public class AlarmsFragment extends Fragment {
 	public interface AlarmFragmentListener {
 		ObservableArrayList<Alarm> getObservableAlarms();
 		void postAlarms();
+		void dismissAlarms();
 	}
 }

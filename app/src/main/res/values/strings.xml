@@ -39,6 +39,7 @@
 
     <string name="title_third_section">More Information</string>
     <string name="more_info_section_terms">Terms &amp; Conditions</string>
+    <string name="terms_confirmation_statement">I have read and agree to the Terms &amp; Conditions and the Privacy Statement for the Wak\u0113 app</string>
     <string name="more_info_section_privacy">Privacy Statement</string>
     <string name="wake_terms_and_conditions_url"><a href="https://luceralabs.com/terms.html">Terms &amp; Conditions</a></string>
     <string name="wake_privacy_statement_url"><a href ="https://luceralabs.com/privacy.html">Privacy Statement</a></string>
@@ -53,6 +54,9 @@
     <string name="secondary_onboarding_placeholder">Enter Code</string>
     <string name="secondary_onboarding_submit">Submit</string>
     <string name="account_sign_out">Sign Out</string>
+
+    <string name="error_no_core_id">Please complete the Connect to Wak\u0113 step before finishing</string>
+    <string name="error_no_side_of_bed">Please set the Side of Bed preference before finishing</string>
 
 
 </resources>

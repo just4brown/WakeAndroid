@@ -8,7 +8,15 @@
     android:background="@color/colorPrimary"
     android:id="@+id/main_layout">
 
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:text="Dismiss Alarm"
+        android:drawableLeft="@drawable/ic_alarm_off_black_24dp"
+        android:id="@+id/dismiss_alarms_button"/>
+
     <android.support.v7.widget.RecyclerView
+        android:layout_marginTop="80dp"
         android:id="@+id/alarms"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>

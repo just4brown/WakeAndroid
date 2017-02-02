@@ -15,6 +15,7 @@ public class OnboardingFragment extends Fragment {
 
 	private Button mPrimaryUserButton;
 	private Button mSecondaryUserButton;
+	private Button mSignOutButton;
 
 	private OnboardingFragmentListener mListener;
 
@@ -25,14 +26,15 @@ public class OnboardingFragment extends Fragment {
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View mainView = inflater.inflate(R.layout.onboarding, container, false);
-		// set on clicker for set up
-		// set on clicker for associate
-		// set on clicker for
+
 		mPrimaryUserButton = (Button) mainView.findViewById(R.id.primary_user_button);
 		mPrimaryUserButton.setOnClickListener(mListener.getPrimaryUserSelectedListener());
 
-		mPrimaryUserButton = (Button) mainView.findViewById(R.id.secondary_user_button);
-		mPrimaryUserButton.setOnClickListener(mListener.getSecondaryUserSelectedListener());
+		mSecondaryUserButton = (Button) mainView.findViewById(R.id.secondary_user_button);
+		mSecondaryUserButton.setOnClickListener(mListener.getSecondaryUserSelectedListener());
+
+		mSignOutButton = (Button) mainView.findViewById(R.id.sign_out_button);
+		mSignOutButton.setOnClickListener(mListener.getSecondaryUserSelectedListener());
 		return mainView;
 	}
 
