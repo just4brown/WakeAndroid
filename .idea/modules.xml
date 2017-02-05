@@ -5,7 +5,6 @@
       <module fileurl="file://$PROJECT_DIR$/WakeAndroid.iml" filepath="$PROJECT_DIR$/WakeAndroid.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
       <module fileurl="file://$PROJECT_DIR$/devicesetup-release/devicesetup-release.iml" filepath="$PROJECT_DIR$/devicesetup-release/devicesetup-release.iml" />
-      <module fileurl="file://$PROJECT_DIR$/devicesetup-release/devicesetup-release.iml" filepath="$PROJECT_DIR$/devicesetup-release/devicesetup-release.iml" />
     </modules>
   </component>
 </project>
