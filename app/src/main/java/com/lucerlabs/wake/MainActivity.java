@@ -68,6 +68,7 @@ public class MainActivity extends AppCompatActivity
 	private UserDto mCurrentUser;
 	private AlertDialog mErrorDialog;
 	private AlertDialog mConfirmationDialog;
+	private boolean mIsOnboarding;
 
 	// Notification stuff
 	public static MainActivity mainActivity;
@@ -137,23 +138,19 @@ public class MainActivity extends AppCompatActivity
 
 		mErrorDialog = new AlertDialog.Builder(this).create();
 		mConfirmationDialog = buildConfirmationDialog(this);
-
 		mAlarms = new ObservableArrayList<Alarm>();
-		getFragmentManager().beginTransaction().add(R.id.frame_content, new AlarmsFragment()).commit();
+		mIsOnboarding = false;
 
 		ParticleDeviceSetupLibrary.init(this.getApplicationContext(), MainActivity.class);
-
-		String deviceId = this.getIntent().getStringExtra("configuredDeviceId");
-		if (deviceId != null && deviceId.length() > 0) {
-			postDeviceId(deviceId);
-		}
 	}
 
 	@Override
 	protected void onStart() {
 		super.onStart();
 		isVisible = true;
-		getUserInfoAsync();
+		if (mCurrentUser == null) {
+			getUserInfoAsync();
+		}
 	}
 
 	@Override
@@ -166,17 +163,21 @@ public class MainActivity extends AppCompatActivity
 	protected void onResume() {
 		super.onResume();
 		isVisible = true;
-
-		String deviceId = this.getIntent().getStringExtra("configuredDeviceId");
-		if (deviceId != null && deviceId.length() > 0) {
-			postDeviceId(deviceId);
-		}
 	}
 
 	@Override
 	protected void onStop() {
 		super.onStop();
 		isVisible = false;
+	}
+
+	@Override
+	protected void onNewIntent(Intent intent) {
+		this.setIntent(intent);
+		String deviceId = this.getIntent().getStringExtra("configuredDeviceId");
+		if (deviceId != null && deviceId.length() > 0) {
+			postDeviceId(deviceId);
+		}
 	}
 
 	public void ToastNotify(final String notificationMessage) {
@@ -250,9 +251,11 @@ public class MainActivity extends AppCompatActivity
 			Log.e("ERROR", " emty deviceId");
 		}
 
-		mCurrentUser.setParticleToken(deviceId);
+		mCurrentUser.setCoreID(deviceId);
 		Log.e("Particle Device Id", deviceId);
-		putUserAsync();
+		if (!mIsOnboarding) {
+			putUserAsync();
+		}
 	}
 
 	@Override
@@ -268,14 +271,18 @@ public class MainActivity extends AppCompatActivity
 
 		if (!sideOfBedValue.isEmpty()) {
 			mCurrentUser.setSideOfBed(sideOfBedValue);
-			putUserAsync();
+			if (!mIsOnboarding) {
+				putUserAsync();
+			}
 		}
 	}
 
 	@Override
 	public void postTimezone(String timezone) {
 		mCurrentUser.setTimezone(timezone);
-		putUserAsync();
+		if (!mIsOnboarding) {
+			putUserAsync();
+		}
 	}
 
 	@Override
@@ -308,7 +315,18 @@ public class MainActivity extends AppCompatActivity
 				mConfirmationDialog.show();
 			}
 		};
-		// TODO: show popup confirming to user that he/she agrees to terms and conditions
+	}
+
+	@Override
+	public void submitSecondaryUserCode(String code) {
+		if (code == null || code.isEmpty()) {
+			mErrorDialog.setTitle("Error");
+			mErrorDialog.setMessage(getResources().getString(R.string.error_no_code));
+			mErrorDialog.show();
+			return;
+		}
+
+		createSecondaryUserAsync(code);
 	}
 
 	@Override
@@ -395,6 +413,11 @@ public class MainActivity extends AppCompatActivity
 		dismissAlarmsAsync();
 	}
 
+	@Override
+	public void generateSecondaryUserCode() {
+		generateSecondaryUserAsync();
+	}
+
 	public void getAlarmsAsync() {
 		httpClient.newCall(BuildGetAlarmsRequest(this.authIdToken)).enqueue(new Callback() {
 			@Override
@@ -459,6 +482,7 @@ public class MainActivity extends AppCompatActivity
 						runOnUiThread(new Runnable() {
 							@Override
 							public void run() {
+								mIsOnboarding = true;
 								getSupportActionBar().setTitle("Setup");
 								setNewFragment(new OnboardingFragment(), false);
 								mDrawerToggle.setDrawerIndicatorEnabled(false);
@@ -548,12 +572,87 @@ public class MainActivity extends AppCompatActivity
 		});
 	}
 
+	public void createSecondaryUserAsync(String code) {
+		httpClient.newCall(
+			new Request.Builder()
+					.header("Authorization", "bearer " + this.authIdToken)
+					.header("Content-Type","application/json")
+					.post(RequestBody.create(MEDIA_TYPE_JSON, ""))
+					.url("http://wakeuserapi.azurewebsites.net/v1/users/code/" + code)
+					.build())
+			.enqueue(new Callback() {
+				@Override
+				public void onResponse(Call call, final Response response) throws IOException {
+					Log.e("HTTP STATUS CODE", Integer.toString(response.code()));
+					if (response.isSuccessful()) {
+						final String rawJsonData = response.body().string();
+						ObjectMapper mapper = new ObjectMapper();
+						final UserDto user = mapper.readValue(rawJsonData, UserDto.class);
+
+						mCurrentUser = user;
+						runOnUiThread(new Runnable() {
+							@Override
+							public void run() {
+								mConfirmationDialog.show();
+							}
+						});
+					}
+					else {
+						throw new IOException("Http failure");
+					}
+				}
+
+				@Override
+				public void onFailure(Call call, IOException e) {
+					e.printStackTrace();
+				}
+			});
+	}
+
+	public void generateSecondaryUserAsync() {
+		httpClient.newCall(
+			new Request.Builder()
+					.header("Authorization", "bearer " + this.authIdToken)
+					.header("Content-Type","application/json")
+					.url("http://wakeuserapi.azurewebsites.net/v1/users/code")
+					.build())
+			.enqueue(new Callback() {
+				@Override
+				public void onResponse(Call call, final Response response) throws IOException {
+					Log.e("HTTP STATUS CODE", Integer.toString(response.code()));
+					if (response.isSuccessful()) {
+						final String rawJsonData = response.body().string();
+						ObjectMapper mapper = new ObjectMapper();
+						final SecondaryUserCodeDto codeBody = mapper.readValue(rawJsonData, SecondaryUserCodeDto.class);
+
+						runOnUiThread(new Runnable() {
+							@Override
+							public void run() {
+								mErrorDialog.setTitle("Secondary User Code");
+								mErrorDialog.setMessage(codeBody.getCode());
+								mErrorDialog.show();
+							}
+						});
+					}
+					else {
+						throw new IOException("Http failure");
+					}
+				}
+
+				@Override
+				public void onFailure(Call call, IOException e) {
+					e.printStackTrace();
+				}
+			});
+	}
+
 	private void doSignOut() {
 		CredentialsManager.deleteCredentials(getApplicationContext());
 		startActivity(new Intent(this, LoginActivity.class));
 	}
 
 	private void initAlarmFragment() {
+		mIsOnboarding = false;
 		mDrawerToggle.setDrawerIndicatorEnabled(false);
 		FragmentTransaction newFragmentTransaction = getFragmentManager().beginTransaction().replace(R.id.frame_content, new AlarmsFragment());
 		addAlarmButton.setVisibility(View.VISIBLE);

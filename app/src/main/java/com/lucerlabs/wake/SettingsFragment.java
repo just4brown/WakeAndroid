@@ -63,6 +63,15 @@ public class SettingsFragment extends PreferenceFragment {
 				return true;
 			}
 		});
+
+		Preference addSecondaryUserPreference = getPreferenceManager().findPreference("secondary_user_section_add_preference");
+		addSecondaryUserPreference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+			@Override
+			public boolean onPreferenceClick(Preference preference) {
+				mListener.generateSecondaryUserCode();
+				return true;
+			}
+		});
 	}
 
 	@Override
@@ -81,5 +90,6 @@ public class SettingsFragment extends PreferenceFragment {
 		void postSideOfBedPreference(String sideOfBed);
 		void postTimezone(String timezone);
 		void startParticleSetup();
+		void generateSecondaryUserCode();
 	}
 }

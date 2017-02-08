@@ -6,10 +6,14 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.EditText;
 
 public class SecondaryOnboardingFragment extends Fragment {
 
 	private SecondaryOnboardingFragmentListener mListener;
+	private Button mSubmitButton;
+	private EditText mInput;
 
 	public SecondaryOnboardingFragment() {
 		// Required empty public constructor
@@ -18,9 +22,16 @@ public class SecondaryOnboardingFragment extends Fragment {
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View mainView = inflater.inflate(R.layout.secondary_onboarding, container, false);
-		// set on clicker for set up
-		// set on clicker for associate
-		// set on clicker for
+
+		mInput = (EditText) mainView.findViewById(R.id.secondary_onboarding_code_input );
+		mSubmitButton = (Button) mainView.findViewById(R.id.secondary_onboarding_submit_button);
+		mSubmitButton.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				mListener.submitSecondaryUserCode(mInput.getText().toString());
+			}
+		});
+
 		return mainView;
 	}
 
@@ -43,7 +54,7 @@ public class SecondaryOnboardingFragment extends Fragment {
 	}
 
 	public interface SecondaryOnboardingFragmentListener {
-		// void registerCode();
+		void submitSecondaryUserCode(String code);
 	}
 }
 

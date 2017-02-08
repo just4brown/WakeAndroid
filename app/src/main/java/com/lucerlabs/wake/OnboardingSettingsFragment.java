@@ -50,6 +50,7 @@ public class OnboardingSettingsFragment extends PreferenceFragment {
 			@Override
 			public boolean onPreferenceClick(Preference preference) {
 				mListener.startParticleSetup();
+				preference.setSummary("Connected");
 				return true;
 			}
 		});
