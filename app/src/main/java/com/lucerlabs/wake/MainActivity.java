@@ -414,6 +414,11 @@ public class MainActivity extends AppCompatActivity
 	}
 
 	@Override
+	public void runDemo() {
+		getAlarmDemoAsync();
+	}
+
+	@Override
 	public void generateSecondaryUserCode() {
 		generateSecondaryUserAsync();
 	}
@@ -570,6 +575,32 @@ public class MainActivity extends AppCompatActivity
 					e.printStackTrace();
 				}
 		});
+	}
+
+	public void getAlarmDemoAsync() {
+		httpClient.newCall(
+				new Request.Builder()
+						.header("Authorization", "bearer " + this.authIdToken)
+						.header("Content-Type","application/json")
+						.url("http://wakeuserapi.azurewebsites.net/v1/devices/demo/port")
+						.build())
+				.enqueue(new Callback() {
+					@Override
+					public void onResponse(Call call, final Response response) throws IOException {
+						Log.e("HTTP STATUS CODE", Integer.toString(response.code()));
+						if (response.isSuccessful()) {
+
+						}
+						else {
+							throw new IOException("Http failure");
+						}
+					}
+
+					@Override
+					public void onFailure(Call call, IOException e) {
+						e.printStackTrace();
+					}
+				});
 	}
 
 	public void createSecondaryUserAsync(String code) {

@@ -17,6 +17,7 @@ public class AlarmsFragment extends Fragment {
 	private RecyclerView mRecyclerView;
 	private AlarmFragmentListener mListener;
 	private Button mDismissButton;
+	private Button mDemoButton;
 
 	public AlarmsFragment() {
 		// Required empty public constructor
@@ -36,6 +37,15 @@ public class AlarmsFragment extends Fragment {
 				mListener.dismissAlarms();
 			}
 		});
+
+		mDemoButton = (Button) alarmView.findViewById(R.id.demo_alarms_button);
+		mDemoButton.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				mListener.runDemo();
+			}
+		});
+
 		return alarmView;
 	}
 
@@ -62,5 +72,6 @@ public class AlarmsFragment extends Fragment {
 		ObservableArrayList<Alarm> getObservableAlarms();
 		void postAlarms();
 		void dismissAlarms();
+		void runDemo();
 	}
 }
