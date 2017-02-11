@@ -419,6 +419,11 @@ public class MainActivity extends AppCompatActivity
 	}
 
 	@Override
+	public UserDto getCurrentUser() {
+		return mCurrentUser;
+	}
+
+	@Override
 	public void generateSecondaryUserCode() {
 		generateSecondaryUserAsync();
 	}
@@ -555,8 +560,8 @@ public class MainActivity extends AppCompatActivity
 			new Request.Builder()
 				.header("Authorization", "bearer " + this.authIdToken)
 				.header("Content-Type","application/json")
-				.delete()
-				.url("http://wakeuserapi.azurewebsites.net/v1/alarms/active")
+				.post(RequestBody.create(MEDIA_TYPE_JSON, ""))
+				.url("http://wakeuserapi.azurewebsites.net/v1/alarms/stop")
 				.build())
 			.enqueue(new Callback() {
 				@Override

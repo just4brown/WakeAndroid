@@ -52,11 +52,11 @@ public class SettingsFragment extends PreferenceFragment {
 			}
 		});
 
-		ListPreference timezone = (ListPreference) getPreferenceManager().findPreference("timezone_preference");
-		timezone.setSummary(TimeZone.getDefault().getID());
-		timezone.setEntries(TimeZone.getAvailableIDs());
-		timezone.setEntryValues(TimeZone.getAvailableIDs());
-		timezone.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+		ListPreference timezonePref = (ListPreference) getPreferenceManager().findPreference("timezone_preference");
+		timezonePref.setSummary(TimeZone.getDefault().getID());
+		timezonePref.setEntries(TimeZone.getAvailableIDs());
+		timezonePref.setEntryValues(TimeZone.getAvailableIDs());
+		timezonePref.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
 			@Override
 			public boolean onPreferenceChange(Preference preference, Object newValue) {
 				preference.setSummary(newValue.toString());
@@ -72,6 +72,36 @@ public class SettingsFragment extends PreferenceFragment {
 				return true;
 			}
 		});
+
+		UserDto currentUserInfo = mListener.getCurrentUser();
+		if (currentUserInfo != null) {
+			String coreId = currentUserInfo.getCoreID();
+			String timezone = currentUserInfo.getTimezone();
+			String sideOfBed = currentUserInfo.getSideOfBed();
+
+			if (coreId != null && !coreId.isEmpty()) {
+				connection.setSummary("Connected");
+			}
+
+			if (timezone != null && !timezone.isEmpty()) {
+				timezonePref.setSummary(timezone);
+			}
+
+			if (sideOfBed != null && !sideOfBed.isEmpty()) {
+				String displayText = null;
+				if (sideOfBed.contentEquals("S")) {
+					displayText = "Left side";
+				} else if (sideOfBed.contentEquals("P")) {
+					displayText = "Right side";
+				} else if (sideOfBed.contentEquals("N")) {
+					displayText = "I have the bed to myself";
+				}
+
+				if (displayText != null) {
+					mListPreference.setSummary(displayText);
+				}
+			}
+		}
 	}
 
 	@Override
@@ -91,5 +121,6 @@ public class SettingsFragment extends PreferenceFragment {
 		void postTimezone(String timezone);
 		void startParticleSetup();
 		void generateSecondaryUserCode();
+		UserDto getCurrentUser();
 	}
 }
