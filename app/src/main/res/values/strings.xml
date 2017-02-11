@@ -43,6 +43,8 @@
     <string name="more_info_section_privacy">Privacy Statement</string>
     <string name="wake_terms_and_conditions_url"><a href="https://luceralabs.com/terms.html">Terms &amp; Conditions</a></string>
     <string name="wake_privacy_statement_url"><a href ="https://luceralabs.com/privacy.html">Privacy Statement</a></string>
+    <string name="wake_terms_and_conditions_base_url">https://luceralabs.com/terms.html</string>
+    <string name="wake_privacy_statement_base_url">https://luceralabs.com/privacy.html</string>
 
     <string name="onboarding_welcome">Welcome to Wak\u0113</string>
     <string name="onboarding_prompt">It looks like you don\'t have a Wak\u0113 associated with your account. Would you like to set up a new Wak\u0113 or associate your account with a Wak\u0113 that has already been set up?</string>

@@ -52,13 +52,23 @@
     <PreferenceCategory
         android:title="@string/title_third_section">
 
-        <PreferenceScreen
+        <Preference
             android:key="terms_preference"
-            android:title="@string/more_info_section_terms"/>
+            android:title="@string/more_info_section_terms">
 
-        <PreferenceScreen
+            <intent
+                android:action="android.intent.action.VIEW"
+                android:data="@string/wake_terms_and_conditions_base_url"/>
+        </Preference>
+
+        <Preference
             android:key="privacy_preference"
-            android:title="@string/more_info_section_privacy"/>
+            android:title="@string/more_info_section_privacy">
+
+            <intent
+                android:action="android.intent.action.VIEW"
+                android:data="@string/wake_privacy_statement_base_url"/>
+        </Preference>
 
     </PreferenceCategory>
 
