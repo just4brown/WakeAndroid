@@ -164,10 +164,10 @@ public class MainActivity extends AppCompatActivity
 	protected void onStart() {
 		super.onStart();
 		isVisible = true;
-		//if (mCurrentUser == null) {
+		if (mCurrentUser == null) {
 			getAuth0UserAysnc();
 			getUserInfoAsync();
-		//}
+		}
 	}
 
 	@Override
@@ -279,9 +279,9 @@ public class MainActivity extends AppCompatActivity
 	public void postSideOfBedPreference(String sideOfBed) {
 		String sideOfBedValue = "";
 		if (sideOfBed.contentEquals("Left side")) {
-			sideOfBedValue = "S";
-		} else if (sideOfBed.contentEquals("Right side")) {
 			sideOfBedValue = "P";
+		} else if (sideOfBed.contentEquals("Right side")) {
+			sideOfBedValue = "S";
 		} else if (sideOfBed.contentEquals("I have the bed to myself")) {
 			sideOfBedValue = "N";
 		}
@@ -449,7 +449,7 @@ public class MainActivity extends AppCompatActivity
 		httpClient.newCall(BuildGetAlarmsRequest(this.authIdToken)).enqueue(new Callback() {
 			@Override
 			public void onResponse(Call call, final Response response) throws IOException {
-				Log.e("HTTP STATUS CODE", Integer.toString(response.code()));
+				Log.e("GET Alarms", Integer.toString(response.code()));
 				if (response.isSuccessful()) {
 					final String rawJsonData = response.body().string();
 					ObjectMapper mapper = new ObjectMapper();
@@ -485,7 +485,7 @@ public class MainActivity extends AppCompatActivity
 		httpClient.newCall(BuildGetUserRequest(this.authIdToken)).enqueue(new Callback() {
 			@Override
 			public void onResponse(Call call, final Response response) throws IOException {
-				Log.e("HTTP STATUS CODE", Integer.toString(response.code()));
+				Log.e("GET User Info", Integer.toString(response.code()));
 				if (response.isSuccessful()) {
 					final String rawJsonData = response.body().string();
 					ObjectMapper mapper = new ObjectMapper();
@@ -580,7 +580,7 @@ public class MainActivity extends AppCompatActivity
 		httpClient.newCall(BuildPostAlarmsRequest(mAlarms, this.authIdToken)).enqueue(new Callback() {
 			@Override
 			public void onResponse(Call call, final Response response) throws IOException {
-				Log.e("HTTP STATUS CODE", Integer.toString(response.code()));
+				Log.e("POST Alarms", Integer.toString(response.code()));
 				if (response.isSuccessful()) {
 
 				}
@@ -600,7 +600,7 @@ public class MainActivity extends AppCompatActivity
 		httpClient.newCall(BuildPutUserRequest(mCurrentUser, this.authIdToken)).enqueue(new Callback() {
 			@Override
 			public void onResponse(Call call, final Response response) throws IOException {
-				Log.e("HTTP STATUS CODE", Integer.toString(response.code()));
+				Log.e("Put User Async: ", Integer.toString(response.code()));
 				if (response.isSuccessful()) {
 
 				}
@@ -627,7 +627,7 @@ public class MainActivity extends AppCompatActivity
 			.enqueue(new Callback() {
 				@Override
 				public void onResponse(Call call, final Response response) throws IOException {
-					Log.e("HTTP STATUS CODE", Integer.toString(response.code()));
+					Log.e("Dismiss Alarm", Integer.toString(response.code()));
 					if (response.isSuccessful()) {
 
 					}
@@ -653,7 +653,7 @@ public class MainActivity extends AppCompatActivity
 				.enqueue(new Callback() {
 					@Override
 					public void onResponse(Call call, final Response response) throws IOException {
-						Log.e("HTTP STATUS CODE", Integer.toString(response.code()));
+						Log.e("Alarm Demo", Integer.toString(response.code()));
 						if (response.isSuccessful()) {
 
 						}
@@ -680,7 +680,7 @@ public class MainActivity extends AppCompatActivity
 			.enqueue(new Callback() {
 				@Override
 				public void onResponse(Call call, final Response response) throws IOException {
-					Log.e("HTTP STATUS CODE", Integer.toString(response.code()));
+					Log.e("Second User Code", Integer.toString(response.code()));
 					if (response.isSuccessful()) {
 						final String rawJsonData = response.body().string();
 						ObjectMapper mapper = new ObjectMapper();
@@ -745,6 +745,7 @@ public class MainActivity extends AppCompatActivity
 
 	private void doSignOut() {
 		CredentialsManager.deleteCredentials(getApplicationContext());
+		mCurrentUser = null;
 		startActivity(new Intent(this, LoginActivity.class));
 	}
 

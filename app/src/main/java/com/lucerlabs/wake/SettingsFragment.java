@@ -30,6 +30,7 @@ public class SettingsFragment extends PreferenceFragment {
 			@Override
 			public boolean onPreferenceChange(Preference preference, Object newValue) {
 			preference.setSummary(newValue.toString());
+				mListener.postSideOfBedPreference(newValue.toString());
 			return true;
 			}
 		});
@@ -89,9 +90,9 @@ public class SettingsFragment extends PreferenceFragment {
 
 			if (sideOfBed != null && !sideOfBed.isEmpty()) {
 				String displayText = null;
-				if (sideOfBed.contentEquals("S")) {
+				if (sideOfBed.contentEquals("P")) {
 					displayText = "Left side";
-				} else if (sideOfBed.contentEquals("P")) {
+				} else if (sideOfBed.contentEquals("S")) {
 					displayText = "Right side";
 				} else if (sideOfBed.contentEquals("N")) {
 					displayText = "I have the bed to myself";
