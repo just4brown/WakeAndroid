@@ -27,6 +27,12 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.TimePicker;
 import android.support.v4.widget.DrawerLayout;
+
+import com.auth0.android.Auth0;
+import com.auth0.android.authentication.AuthenticationAPIClient;
+import com.auth0.android.authentication.AuthenticationException;
+import com.auth0.android.callback.BaseCallback;
+import com.auth0.android.result.UserProfile;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.*;
 import java.io.IOException;
@@ -75,6 +81,8 @@ public class MainActivity extends AppCompatActivity
 	public static Boolean isVisible = false;
 	private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
 
+	private AuthenticationAPIClient client;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -111,12 +119,20 @@ public class MainActivity extends AppCompatActivity
 		navigationView.setNavigationItemSelectedListener(this);
 		navigationView.setCheckedItem(R.id.nav_alarms);
 
+		Auth0 auth0 = new Auth0(getString(R.string.auth0_client_id), getString(R.string.auth0_domain));
+		client = new AuthenticationAPIClient(auth0);
+
+
 		// Set user info in sidebar
 
-		TextView mTextView = (TextView) navigationView.getHeaderView(0).findViewById(R.id.nav_name);
-		mTextView.setText("Bro");
-		mTextView = (TextView) navigationView.getHeaderView(0).findViewById(R.id.nav_email);
-		mTextView.setText("Bro@bro.com");
+//		UserProfile profile = (UserProfile) getIntent().getSerializableExtra("user");
+//
+//		String userString = profile.getExtraInfo().get("user").toString();
+//
+//		TextView mTextView = (TextView) navigationView.getHeaderView(0).findViewById(R.id.nav_name);
+//		mTextView.setText(profile.getName());
+//		mTextView = (TextView) navigationView.getHeaderView(0).findViewById(R.id.nav_email);
+//		mTextView.setText(profile.getEmail());
 
 
 		final TimePickerDialog.OnTimeSetListener timePickerListener = new TimePickerDialog.OnTimeSetListener() {
@@ -148,9 +164,10 @@ public class MainActivity extends AppCompatActivity
 	protected void onStart() {
 		super.onStart();
 		isVisible = true;
-		if (mCurrentUser == null) {
+		//if (mCurrentUser == null) {
+			getAuth0UserAysnc();
 			getUserInfoAsync();
-		}
+		//}
 	}
 
 	@Override
@@ -513,6 +530,50 @@ public class MainActivity extends AppCompatActivity
 				e.printStackTrace();
 			}
 		});
+	}
+
+	public void getAuth0UserAysnc(){
+		client.tokenInfo(CredentialsManager.getCredentials(this).getIdToken())
+				.start(new BaseCallback<UserProfile, AuthenticationException>() {
+					@Override
+					public void onSuccess(final UserProfile payload) {
+
+						final UserProfile profile = payload;
+
+						String userString = profile.getExtraInfo().get("user").toString();
+
+
+
+
+						MainActivity.this.runOnUiThread(new Runnable() {
+							public void run() {
+								Toast.makeText(MainActivity.this, "User Loaded", Toast.LENGTH_SHORT).show();
+
+								NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+
+								TextView mTextView = (TextView) navigationView.getHeaderView(0).findViewById(R.id.nav_name);
+								mTextView.setText(profile.getName());
+								mTextView = (TextView) navigationView.getHeaderView(0).findViewById(R.id.nav_email);
+								mTextView.setText(profile.getEmail());
+
+							}
+						});
+
+
+
+					}
+
+					@Override
+					public void onFailure(AuthenticationException error) {
+						MainActivity.this.runOnUiThread(new Runnable() {
+							public void run() {
+								Toast.makeText(MainActivity.this, "Session Expired, please Log In", Toast.LENGTH_SHORT).show();
+							}
+						});
+						CredentialsManager.deleteCredentials(getApplicationContext());
+
+					}
+				});
 	}
 
 	public void postAlarmsAsync() {

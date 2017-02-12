@@ -20,6 +20,7 @@ import com.auth0.android.lock.LockCallback;
 import com.auth0.android.lock.utils.LockException;
 import com.auth0.android.result.Credentials;
 import com.auth0.android.result.UserProfile;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.android.gms.appindexing.Action;
 import com.google.android.gms.appindexing.AppIndex;
 import com.google.android.gms.appindexing.Thing;
@@ -35,13 +36,15 @@ public class LoginActivity extends AppCompatActivity {
      */
     private GoogleApiClient client2;
 
+    private AuthenticationAPIClient client;
+
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         client2 = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
 
         Auth0 auth0 = new Auth0(getString(R.string.auth0_client_id), getString(R.string.auth0_domain));
-        AuthenticationAPIClient client = new AuthenticationAPIClient(auth0);
+        client = new AuthenticationAPIClient(auth0);
 
         GoogleAuthProvider provider = new GoogleAuthProvider(getString(R.string.google_server_client_id), client);
         //provider.setScopes(Arrays.asList(new Scope(Scopes.PLUS_ME), new Scope(Scopes.PLUS_LOGIN)));
@@ -65,13 +68,19 @@ public class LoginActivity extends AppCompatActivity {
                 .start(new BaseCallback<UserProfile, AuthenticationException>() {
                     @Override
                     public void onSuccess(final UserProfile payload) {
+
+
                         LoginActivity.this.runOnUiThread(new Runnable() {
                             public void run() {
                                 Toast.makeText(LoginActivity.this, "Automatic Login Success", Toast.LENGTH_SHORT).show();
 
                             }
                         });
-                        startActivity(new Intent(getApplicationContext(), MainActivity.class));
+
+
+                        Intent mainIntent = new Intent(getApplicationContext(), MainActivity.class);
+                        mainIntent.putExtra("user", payload);
+                        startActivity(mainIntent);
                         finish();
                     }
 
@@ -115,6 +124,8 @@ public class LoginActivity extends AppCompatActivity {
             startActivity(new Intent(LoginActivity.this, MainActivity.class));
 
             finish();
+
+
         }
 
         @Override
@@ -127,6 +138,8 @@ public class LoginActivity extends AppCompatActivity {
             Toast.makeText(getApplicationContext(), "Log In - Error Occurred", Toast.LENGTH_SHORT).show();
         }
     };
+
+
 
     /**
      * ATTENTION: This was auto-generated to implement the App Indexing API.
