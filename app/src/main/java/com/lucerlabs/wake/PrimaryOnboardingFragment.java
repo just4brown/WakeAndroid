@@ -21,13 +21,16 @@ public class PrimaryOnboardingFragment extends Fragment {
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View mainView = inflater.inflate(R.layout.primary_onboarding, container, false);
-
 		mFinishButton = (Button) mainView.findViewById(R.id.finish_button);
-		mFinishButton.setOnClickListener(mListener.finishOnboardingClickListener());
-
 		mBackButton = (Button) mainView.findViewById(R.id.back_button);
-		mBackButton.setOnClickListener(mListener.goBackClickListener());
 		return mainView;
+	}
+
+	@Override
+	public void onActivityCreated(Bundle savedInstanceState) {
+		super.onActivityCreated(savedInstanceState);
+		mFinishButton.setOnClickListener(mListener.finishOnboardingClickListener());
+		mBackButton.setOnClickListener(mListener.goBackClickListener());
 	}
 
 	@Override

@@ -86,9 +86,6 @@ public class MainActivity extends AppCompatActivity
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		//Bundle extras = getIntent().getExtras();
-		//authIdToken = extras.getString("AUTH_ID_TOKEN");
-
 		authIdToken = CredentialsManager.getCredentials(this).getIdToken();
 
 		setContentView(R.layout.activity_main);
@@ -161,8 +158,8 @@ public class MainActivity extends AppCompatActivity
 	}
 
 	@Override
-	protected void onStart() {
-		super.onStart();
+	protected void onPostResume() {
+		super.onPostResume();
 		isVisible = true;
 		if (mCurrentUser == null) {
 			getAuth0UserAysnc();
@@ -494,7 +491,6 @@ public class MainActivity extends AppCompatActivity
 					mCurrentUser = user;
 
 					if (user.isRegistered()) {
-						// TODO: set user name/email/icon in nav drawer
 						getAlarmsAsync();
 						runOnUiThread(new Runnable() {
 							@Override
@@ -735,7 +731,9 @@ public class MainActivity extends AppCompatActivity
 	private void doSignOut() {
 		CredentialsManager.deleteCredentials(getApplicationContext());
 		mCurrentUser = null;
+		authIdToken = null;
 		startActivity(new Intent(this, LoginActivity.class));
+		finish();
 	}
 
 	private void initAlarmFragment() {

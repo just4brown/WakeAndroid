@@ -23,16 +23,18 @@ public class OnboardingFragment extends Fragment {
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View mainView = inflater.inflate(R.layout.onboarding, container, false);
-
 		mPrimaryUserButton = (Button) mainView.findViewById(R.id.primary_user_button);
-		mPrimaryUserButton.setOnClickListener(mListener.getPrimaryUserSelectedListener());
-
 		mSecondaryUserButton = (Button) mainView.findViewById(R.id.secondary_user_button);
-		mSecondaryUserButton.setOnClickListener(mListener.getSecondaryUserSelectedListener());
-
 		mSignOutButton = (Button) mainView.findViewById(R.id.sign_out_button);
-		mSignOutButton.setOnClickListener(mListener.getSignOutButtonListener());
 		return mainView;
+	}
+
+	@Override
+	public void onActivityCreated(Bundle savedInstanceState) {
+		super.onActivityCreated(savedInstanceState);
+		mPrimaryUserButton.setOnClickListener(mListener.getPrimaryUserSelectedListener());
+		mSecondaryUserButton.setOnClickListener(mListener.getSecondaryUserSelectedListener());
+		mSignOutButton.setOnClickListener(mListener.getSignOutButtonListener());
 	}
 
 	@Override
