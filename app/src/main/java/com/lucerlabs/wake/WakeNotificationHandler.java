@@ -21,9 +21,6 @@ public class WakeNotificationHandler extends NotificationsHandler {
 		ctx = context;
 		String nhMessage = bundle.getString("message");
 		sendNotification(nhMessage);
-		if (MainActivity.isVisible) {
-			MainActivity.mainActivity.ToastNotify(nhMessage);
-		}
 	}
 
 	private void sendNotification(String msg) {

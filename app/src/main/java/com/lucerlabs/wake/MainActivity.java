@@ -539,28 +539,17 @@ public class MainActivity extends AppCompatActivity
 					public void onSuccess(final UserProfile payload) {
 
 						final UserProfile profile = payload;
-
 						String userString = profile.getExtraInfo().get("user").toString();
-
-
-
 
 						MainActivity.this.runOnUiThread(new Runnable() {
 							public void run() {
-								Toast.makeText(MainActivity.this, "User Loaded", Toast.LENGTH_SHORT).show();
-
 								NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
-
 								TextView mTextView = (TextView) navigationView.getHeaderView(0).findViewById(R.id.nav_name);
 								mTextView.setText(profile.getName());
 								mTextView = (TextView) navigationView.getHeaderView(0).findViewById(R.id.nav_email);
 								mTextView.setText(profile.getEmail());
-
 							}
 						});
-
-
-
 					}
 
 					@Override
