@@ -47,57 +47,46 @@ public class LoginActivity extends AppCompatActivity {
         client = new AuthenticationAPIClient(auth0);
 
         GoogleAuthProvider provider = new GoogleAuthProvider(getString(R.string.google_server_client_id), client);
-        //provider.setScopes(Arrays.asList(new Scope(Scopes.PLUS_ME), new Scope(Scopes.PLUS_LOGIN)));
-        //provider.setScopes(new Scope(DriveScopes.DRIVE_METADATA_READONLY));
-        //provider.setRequiredPermissions(new String[]{"android.permission.GET_ACCOUNTS"});
-
         GoogleAuthHandler handler = new GoogleAuthHandler((provider));
 
         mLock = Lock.newBuilder(auth0, mCallback)
-                //Add parameters to the builder
-                .withAuthHandlers(handler)
-                .build(this);
+            .withAuthHandlers(handler)
+            .build(this);
 
-        if(CredentialsManager.getCredentials(this).getIdToken() == null){
+        if(CredentialsManager.getCredentials(this).getIdToken() == null) {
             startActivity(mLock.newIntent(this));
             return;
         }
 
-        //AuthenticationAPIClient aClient = new AuthenticationAPIClient(auth0);
         client.tokenInfo(CredentialsManager.getCredentials(this).getIdToken())
-                .start(new BaseCallback<UserProfile, AuthenticationException>() {
-                    @Override
-                    public void onSuccess(final UserProfile payload) {
+            .start(new BaseCallback<UserProfile, AuthenticationException>() {
+                @Override
+                public void onSuccess(final UserProfile payload) {
 
+                    LoginActivity.this.runOnUiThread(new Runnable() {
+                        public void run() {
+                            Toast.makeText(LoginActivity.this, "Automatic Login Success", Toast.LENGTH_SHORT).show();
 
-                        LoginActivity.this.runOnUiThread(new Runnable() {
-                            public void run() {
-                                Toast.makeText(LoginActivity.this, "Automatic Login Success", Toast.LENGTH_SHORT).show();
+                        }
+                    });
 
-                            }
-                        });
+                    Intent mainIntent = new Intent(getApplicationContext(), MainActivity.class);
+                    mainIntent.putExtra("user", payload);
+                    startActivity(mainIntent);
+                    finish();
+                }
 
-
-                        Intent mainIntent = new Intent(getApplicationContext(), MainActivity.class);
-                        mainIntent.putExtra("user", payload);
-                        startActivity(mainIntent);
-                        finish();
-                    }
-
-                    @Override
-                    public void onFailure(AuthenticationException error) {
-                        LoginActivity.this.runOnUiThread(new Runnable() {
-                            public void run() {
-                                Toast.makeText(LoginActivity.this, "Session Expired, please Log In", Toast.LENGTH_SHORT).show();
-                            }
-                        });
-                        CredentialsManager.deleteCredentials(getApplicationContext());
-                        startActivity(mLock.newIntent(LoginActivity.this));
-                    }
-                });
-
-        // ATTENTION: This was auto-generated to implement the App Indexing API.
-        // See https://g.co/AppIndexing/AndroidStudio for more information.
+                @Override
+                public void onFailure(AuthenticationException error) {
+                    LoginActivity.this.runOnUiThread(new Runnable() {
+                        public void run() {
+                            Toast.makeText(LoginActivity.this, "Session Expired, please Log In", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                    CredentialsManager.deleteCredentials(getApplicationContext());
+                    startActivity(mLock.newIntent(LoginActivity.this));
+                }
+            });
 
     }
 
@@ -112,20 +101,9 @@ public class LoginActivity extends AppCompatActivity {
     private final LockCallback mCallback = new AuthenticationCallback() {
         @Override
         public void onAuthentication(Credentials credentials) {
-            Toast.makeText(getApplicationContext(), "Log In - Success", Toast.LENGTH_SHORT).show();
             CredentialsManager.saveCredentials(getApplicationContext(), credentials);
-
-//            Intent mainApplicationIntent = new Intent(getApplicationContext(), MainActivity.class);
-//
-//            mainApplicationIntent.putExtra("AUTH_ID_TOKEN", credentials.getIdToken());
-//
-//            startActivity(mainApplicationIntent);
-
             startActivity(new Intent(LoginActivity.this, MainActivity.class));
-
             finish();
-
-
         }
 
         @Override
