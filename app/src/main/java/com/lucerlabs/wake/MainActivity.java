@@ -119,19 +119,6 @@ public class MainActivity extends AppCompatActivity
 		Auth0 auth0 = new Auth0(getString(R.string.auth0_client_id), getString(R.string.auth0_domain));
 		client = new AuthenticationAPIClient(auth0);
 
-
-		// Set user info in sidebar
-
-//		UserProfile profile = (UserProfile) getIntent().getSerializableExtra("user");
-//
-//		String userString = profile.getExtraInfo().get("user").toString();
-//
-//		TextView mTextView = (TextView) navigationView.getHeaderView(0).findViewById(R.id.nav_name);
-//		mTextView.setText(profile.getName());
-//		mTextView = (TextView) navigationView.getHeaderView(0).findViewById(R.id.nav_email);
-//		mTextView.setText(profile.getEmail());
-
-
 		final TimePickerDialog.OnTimeSetListener timePickerListener = new TimePickerDialog.OnTimeSetListener() {
 			@Override
 			public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
