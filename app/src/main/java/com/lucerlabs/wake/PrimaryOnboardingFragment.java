@@ -29,8 +29,18 @@ public class PrimaryOnboardingFragment extends Fragment {
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-		mFinishButton.setOnClickListener(mListener.finishOnboardingClickListener());
-		mBackButton.setOnClickListener(mListener.goBackClickListener());
+		mFinishButton.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				mListener.finishOnboarding();
+			}
+		});
+		mBackButton.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				mListener.goBack();
+			}
+		});
 	}
 
 	@Override
@@ -52,8 +62,8 @@ public class PrimaryOnboardingFragment extends Fragment {
 	}
 
 	public interface PrimaryOnboardingFragmentListener {
-		View.OnClickListener finishOnboardingClickListener();
-		View.OnClickListener goBackClickListener();
+		void finishOnboarding();
+		void goBack();
 	}
 }
 

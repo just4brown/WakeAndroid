@@ -287,35 +287,30 @@ public class MainActivity extends AppCompatActivity
 	}
 
 	@Override
-	public View.OnClickListener finishOnboardingClickListener() {
-		return new View.OnClickListener() {
-			@Override
-			public void onClick(View view) {
-				if (mCurrentUser.getCoreID() == null || mCurrentUser.getCoreID().isEmpty()) {
-					mErrorDialog.setTitle("Error");
-					mErrorDialog.setMessage(getResources().getString(R.string.error_no_core_id));
-					mErrorDialog.show();
-					return;
-				}
+	public void finishOnboarding() {
+		if (mCurrentUser.getCoreID() == null || mCurrentUser.getCoreID().isEmpty()) {
+			mErrorDialog.setTitle("Error");
+			mErrorDialog.setMessage(getResources().getString(R.string.error_no_core_id));
+			mErrorDialog.show();
+			return;
+		}
 
-				if (mCurrentUser.getSideOfBed() == null || mCurrentUser.getSideOfBed().isEmpty()){
-					mErrorDialog.setTitle("Error");
-					mErrorDialog.setMessage(getResources().getString(R.string.error_no_side_of_bed));
-					mErrorDialog.show();
-					return;
-				}
+		if (mCurrentUser.getSideOfBed() == null || mCurrentUser.getSideOfBed().isEmpty()){
+			mErrorDialog.setTitle("Error");
+			mErrorDialog.setMessage(getResources().getString(R.string.error_no_side_of_bed));
+			mErrorDialog.show();
+			return;
+		}
 
-				if (mCurrentUser.getTimezone() == null || mCurrentUser.getTimezone().isEmpty()){
-					mCurrentUser.setTimezone(TimeZone.getDefault().getID());
-				}
+		if (mCurrentUser.getTimezone() == null || mCurrentUser.getTimezone().isEmpty()){
+			mCurrentUser.setTimezone(TimeZone.getDefault().getID());
+		}
 
-				mCurrentUser.setIsRegistered(true);
-				mCurrentUser.setIsPrimaryUser(true);
+		mCurrentUser.setIsRegistered(true);
+		mCurrentUser.setIsPrimaryUser(true);
 
-				putUserAsync();
-				mConfirmationDialog.show();
-			}
-		};
+		putUserAsync();
+		mConfirmationDialog.show();
 	}
 
 	@Override
@@ -331,43 +326,18 @@ public class MainActivity extends AppCompatActivity
 	}
 
 	@Override
-	public View.OnClickListener goBackClickListener() {
-		return new View.OnClickListener() {
-			@Override
-			public void onClick(View view) {
-				onBackPressed();
-			}
-		};
+	public void goBack() {
+		onBackPressed();
 	}
 
 	@Override
-	public View.OnClickListener getSignOutButtonListener() {
-		return new View.OnClickListener() {
-			@Override
-			public void onClick(View view) {
-				doSignOut();
-			}
-		};
+	public void selectPrimaryUserOnboarding() {
+		setNewFragment(new PrimaryOnboardingFragment(), true);
 	}
 
 	@Override
-	public View.OnClickListener getPrimaryUserSelectedListener() {
-		return new View.OnClickListener() {
-			@Override
-			public void onClick(View view) {
-				setNewFragment(new PrimaryOnboardingFragment(), true);
-			}
-		};
-	}
-
-	@Override
-	public View.OnClickListener getSecondaryUserSelectedListener() {
-		return new View.OnClickListener() {
-			@Override
-			public void onClick(View view) {
-				setNewFragment(new SecondaryOnboardingFragment(), true);
-			}
-		};
+	public void selectSecondaryUserOnboarding() {
+		setNewFragment(new SecondaryOnboardingFragment(), true);
 	}
 
 	@Override
@@ -715,7 +685,8 @@ public class MainActivity extends AppCompatActivity
 			});
 	}
 
-	private void doSignOut() {
+	@Override
+	public void doSignOut() {
 		CredentialsManager.deleteCredentials(getApplicationContext());
 		mCurrentUser = null;
 		authIdToken = null;

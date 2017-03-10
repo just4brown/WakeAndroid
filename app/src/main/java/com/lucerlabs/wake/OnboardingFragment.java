@@ -32,9 +32,24 @@ public class OnboardingFragment extends Fragment {
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-		mPrimaryUserButton.setOnClickListener(mListener.getPrimaryUserSelectedListener());
-		mSecondaryUserButton.setOnClickListener(mListener.getSecondaryUserSelectedListener());
-		mSignOutButton.setOnClickListener(mListener.getSignOutButtonListener());
+		mPrimaryUserButton.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				mListener.selectPrimaryUserOnboarding();
+			}
+		});
+		mSecondaryUserButton.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				mListener.selectSecondaryUserOnboarding();
+			}
+		});
+		mSignOutButton.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				mListener.doSignOut();
+			}
+		});
 	}
 
 	@Override
@@ -57,9 +72,9 @@ public class OnboardingFragment extends Fragment {
 	}
 
 	public interface OnboardingFragmentListener {
-		View.OnClickListener getSignOutButtonListener();
-		View.OnClickListener getPrimaryUserSelectedListener();
-		View.OnClickListener getSecondaryUserSelectedListener();
+		void doSignOut();
+		void selectPrimaryUserOnboarding();
+		void selectSecondaryUserOnboarding();
 	}
 }
 
