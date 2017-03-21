@@ -39,7 +39,7 @@ public class SettingsFragment extends PreferenceFragment {
 		installation.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
 			@Override
 			public boolean onPreferenceClick(Preference preference) {
-				mListener.setNewFragment(new ScreenSlidePageFragment(), true);
+				mListener.setNewFragment(new ScreenSlidePageFragment(), true, "installPreference");
 				return true;
 			}
 		});
@@ -117,7 +117,7 @@ public class SettingsFragment extends PreferenceFragment {
 	}
 
 	public interface SettingsFragmentListener {
-		void setNewFragment(Fragment fragment, boolean showBackButton);
+		void setNewFragment(Fragment fragment, boolean showBackButton, String tag);
 		void postSideOfBedPreference(String sideOfBed);
 		void postTimezone(String timezone);
 		void startParticleSetup();

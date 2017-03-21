@@ -40,7 +40,7 @@ public class OnboardingSettingsFragment extends PreferenceFragment {
 		installation.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
 			@Override
 			public boolean onPreferenceClick(Preference preference) {
-				mListener.setNewFragment(new ScreenSlidePageFragment(), true);
+				mListener.setNewFragment(new ScreenSlidePageFragment(), true, "installPreference");
 				return true;
 			}
 		});
@@ -79,5 +79,12 @@ public class OnboardingSettingsFragment extends PreferenceFragment {
 			throw new RuntimeException(context.toString()
 					+ " must implement SettingsFragmentListener");
 		}
+	}
+
+	@Override
+	public void onDetach() {
+		super.onDetach();
+		mListener = null;
+		mListPreference = null;
 	}
 }

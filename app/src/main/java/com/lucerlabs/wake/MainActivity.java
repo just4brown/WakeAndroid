@@ -229,9 +229,9 @@ public class MainActivity extends AppCompatActivity
 	}
 
 	@Override
-	public void setNewFragment(Fragment fragment, boolean showBackButton) {
+	public void setNewFragment(Fragment fragment, boolean showBackButton, String tag) {
 		mDrawerToggle.setDrawerIndicatorEnabled(false);
-		FragmentTransaction newFragmentTransaction = getFragmentManager().beginTransaction().replace(R.id.frame_content, fragment);
+		FragmentTransaction newFragmentTransaction = getFragmentManager().beginTransaction().replace(R.id.frame_content, fragment, tag);
 		addAlarmButton.setVisibility(View.INVISIBLE);
 		if (showBackButton) {
 			newFragmentTransaction.addToBackStack(null);
@@ -332,12 +332,12 @@ public class MainActivity extends AppCompatActivity
 
 	@Override
 	public void selectPrimaryUserOnboarding() {
-		setNewFragment(new PrimaryOnboardingFragment(), true);
+		setNewFragment(new PrimaryOnboardingFragment(), true, "primaryOnboarding");
 	}
 
 	@Override
 	public void selectSecondaryUserOnboarding() {
-		setNewFragment(new SecondaryOnboardingFragment(), true);
+		setNewFragment(new SecondaryOnboardingFragment(), true, "secondaryOnboarding");
 	}
 
 	@Override
@@ -464,7 +464,7 @@ public class MainActivity extends AppCompatActivity
 							public void run() {
 								mIsOnboarding = true;
 								getSupportActionBar().setTitle("Setup");
-								setNewFragment(new OnboardingFragment(), false);
+								setNewFragment(new OnboardingFragment(), false, "baseOnboarding");
 								mDrawerToggle.setDrawerIndicatorEnabled(false);
 								// TODO: reset the title again back to "wake"
 							}

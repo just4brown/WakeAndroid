@@ -12,11 +12,10 @@
                       android:orientation="horizontal"
                       android:layout_width="match_parent"
                       android:layout_height="wrap_content">
-            <fragment
-                android:id="@+id/onboarding_settings_fragment"
+            <FrameLayout
+                android:id="@+id/frame_onboarding_settings"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:name="com.lucerlabs.wake.OnboardingSettingsFragment"/>
+                android:layout_height="match_parent" />
 
         </LinearLayout>
 
@@ -54,14 +53,16 @@
 
             <Button
                 android:text="@string/onboarding_primary_back"
-                android:layout_width="256dp"
+                android:layout_width="0dp"
+                android:layout_weight="0.50"
                 android:layout_height="wrap_content"
                 android:id="@+id/back_button"
                 android:textAppearance="?android:attr/textAppearanceSmall"/>
 
             <Button
                 android:text="@string/onboarding_primary_finish"
-                android:layout_width="256dp"
+                android:layout_width="0dp"
+                android:layout_weight="0.50"
                 android:layout_height="wrap_content"
                 android:id="@+id/finish_button"
                 android:textAppearance="?android:attr/textAppearanceSmall"/>

@@ -1,6 +1,7 @@
 package com.lucerlabs.wake;
 
 import android.app.Fragment;
+import android.app.FragmentTransaction;
 import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -23,6 +24,14 @@ public class PrimaryOnboardingFragment extends Fragment {
 		View mainView = inflater.inflate(R.layout.primary_onboarding, container, false);
 		mFinishButton = (Button) mainView.findViewById(R.id.finish_button);
 		mBackButton = (Button) mainView.findViewById(R.id.back_button);
+
+		Fragment existingFragment = getChildFragmentManager().findFragmentByTag("onboardingSettings");
+		if (existingFragment == null) {
+			existingFragment = new OnboardingSettingsFragment();
+		}
+
+		FragmentTransaction transaction = getChildFragmentManager().beginTransaction();
+		transaction.replace(R.id.frame_onboarding_settings, existingFragment).commit();
 		return mainView;
 	}
 
@@ -59,6 +68,8 @@ public class PrimaryOnboardingFragment extends Fragment {
 	public void onDetach() {
 		super.onDetach();
 		mListener = null;
+		mBackButton = null;
+		mFinishButton = null;
 	}
 
 	public interface PrimaryOnboardingFragmentListener {

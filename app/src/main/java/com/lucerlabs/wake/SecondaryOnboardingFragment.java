@@ -51,6 +51,8 @@ public class SecondaryOnboardingFragment extends Fragment {
 	public void onDetach() {
 		super.onDetach();
 		mListener = null;
+		mInput = null;
+		mSubmitButton = null;
 	}
 
 	public interface SecondaryOnboardingFragmentListener {
