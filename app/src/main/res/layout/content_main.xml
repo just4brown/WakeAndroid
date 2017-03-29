@@ -18,7 +18,8 @@
             android:layout_height="64dp"
             android:text="Demo Alarm"
             android:id="@+id/demo_alarms_button"
-            android:layout_weight="0.5"/>
+            android:layout_weight="0.5"
+            style="@style/Widget.AppCompat.Button.Colored" />
 
         <Button
             android:layout_width="0dp"
@@ -26,7 +27,8 @@
             android:text="Dismiss Alarm"
             android:drawableLeft="@drawable/ic_alarm_off_black_24dp"
             android:id="@+id/dismiss_alarms_button"
-            android:layout_weight="0.5"/>
+            android:layout_weight="0.5"
+            style="@style/Widget.AppCompat.Button.Colored" />
 
     </LinearLayout>
 

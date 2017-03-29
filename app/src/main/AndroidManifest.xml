@@ -41,7 +41,8 @@
         </receiver>
         <activity
             android:name=".StartActivity"
-            android:noHistory="true">
+            android:noHistory="true"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
@@ -51,7 +52,8 @@
             android:name=".MainActivity"
             android:label="@string/title_activity_main"
             android:launchMode="singleTask"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:theme="@style/AppTheme.NoActionBar"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 
@@ -76,7 +78,8 @@
             </intent-filter>
         </activity>
         <activity android:name="com.auth0.android.provider.WebAuthActivity"/>
-        <activity android:name=".LoginActivity"/>
+        <activity android:name=".LoginActivity"
+            android:screenOrientation="portrait"/>
         <activity
             android:name="io.particle.android.sdk.devicesetup.ui.DiscoverDeviceActivity"
             android:label="@string/title_activity_discover_device"
