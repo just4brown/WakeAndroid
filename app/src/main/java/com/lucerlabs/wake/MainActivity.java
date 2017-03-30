@@ -4,11 +4,21 @@ import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.app.TimePickerDialog;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.databinding.ObservableArrayList;
+import android.media.AudioManager;
+import android.media.MediaPlayer;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.FragmentManager;
@@ -17,40 +27,25 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.TimePicker;
 import android.support.v4.widget.DrawerLayout;
-
 import com.auth0.android.Auth0;
 import com.auth0.android.authentication.AuthenticationAPIClient;
 import com.auth0.android.authentication.AuthenticationException;
 import com.auth0.android.callback.BaseCallback;
+import com.auth0.android.result.Credentials;
 import com.auth0.android.result.UserProfile;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.*;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.TimeZone;
-
-import io.particle.android.sdk.accountsetup.*;
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
 import io.particle.android.sdk.devicesetup.ParticleDeviceSetupLibrary;
-
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.android.gms.games.event.Events;
+import com.google.firebase.iid.FirebaseInstanceId;
+import com.microsoft.windowsazure.messaging.NotificationHub;
 import com.microsoft.windowsazure.notifications.NotificationsManager;
 import android.widget.Toast;
 
@@ -64,8 +59,6 @@ public class MainActivity extends AppCompatActivity
 		SecondaryOnboardingFragment.SecondaryOnboardingFragmentListener {
 
 	private ObservableArrayList<Alarm> mAlarms;
-	private final OkHttpClient httpClient = new OkHttpClient();
-	public static final okhttp3.MediaType MEDIA_TYPE_JSON = okhttp3.MediaType.parse("application/json; charset=utf-8");
 	private String authIdToken;
 	private DrawerLayout mDrawerLayout;
 	private ActionBarDrawerToggle mDrawerToggle;
@@ -75,24 +68,52 @@ public class MainActivity extends AppCompatActivity
 	private AlertDialog mErrorDialog;
 	private AlertDialog mConfirmationDialog;
 	private boolean mIsOnboarding;
+	private SharedPreferences mSharedPreferences;
+	private WakeCloudClient wakeCloud;
+	private MediaPlayer mPlayer;
+	private TextView mAlarmStatus;
+	private BroadcastReceiver mNotificationReceiver = new BroadcastReceiver() {
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			String category = intent.getStringExtra("category");
+			if (category != null) {
+				if (mAlarmStatus != null) {
+					mAlarmStatus.setText("Alarm Status: Alarming");
+				}
+				if (category.contentEquals("BACKUP_ALARM")) {
+					startPlayer();
+				}
+			}
+		}
+	};
 
 	// Notification stuff
 	public static MainActivity mainActivity;
 	public static Boolean isVisible = false;
 	private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
 
+	private final static float MAX_VOLUME = 1.0f;
+
 	private AuthenticationAPIClient client;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		authIdToken = CredentialsManager.getCredentials(this).getIdToken();
+		Credentials credentials = CredentialsManager.getCredentials(this);
+		if (credentials == null) {
+			doSignOut();
+		}
+		authIdToken = credentials.getIdToken();
+		if (authIdToken == null) {
+			doSignOut();
+		}
 
 		setContentView(R.layout.activity_main);
 
 		mainActivity = this;
 		NotificationsManager.handleNotifications(this, NotificationSettings.SenderId, WakeNotificationHandler.class);
-		registerWithNotificationHubs();
+
+		mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
 		Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
 		setSupportActionBar(toolbar);
@@ -111,6 +132,7 @@ public class MainActivity extends AppCompatActivity
 				}
 			}
 		});
+		mAlarmStatus = (TextView) findViewById(R.id.alarm_status_indicator);
 
 		NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
 		navigationView.setNavigationItemSelectedListener(this);
@@ -118,6 +140,7 @@ public class MainActivity extends AppCompatActivity
 
 		Auth0 auth0 = new Auth0(getString(R.string.auth0_client_id), getString(R.string.auth0_domain));
 		client = new AuthenticationAPIClient(auth0);
+		wakeCloud = new WakeCloudClient(this.authIdToken, new Handler(Looper.getMainLooper()));
 
 		final TimePickerDialog.OnTimeSetListener timePickerListener = new TimePickerDialog.OnTimeSetListener() {
 			@Override
@@ -142,12 +165,14 @@ public class MainActivity extends AppCompatActivity
 		mIsOnboarding = false;
 
 		ParticleDeviceSetupLibrary.init(this.getApplicationContext(), MainActivity.class);
+		mPlayer = new MediaPlayer();
 	}
 
 	@Override
 	protected void onPostResume() {
 		super.onPostResume();
 		isVisible = true;
+		registerWithNotificationHubs();
 		if (mCurrentUser == null) {
 			getAuth0UserAysnc();
 			getUserInfoAsync();
@@ -164,6 +189,7 @@ public class MainActivity extends AppCompatActivity
 	protected void onResume() {
 		super.onResume();
 		isVisible = true;
+		registerReceiver(mNotificationReceiver, new IntentFilter("alarmStatus"));
 	}
 
 	@Override
@@ -173,11 +199,30 @@ public class MainActivity extends AppCompatActivity
 	}
 
 	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+		if (mPlayer.isPlaying()) {
+			mPlayer.stop();
+			mPlayer.release();
+			mPlayer = null;
+		}
+		unregisterReceiver(mNotificationReceiver);
+	}
+
+	@Override
 	protected void onNewIntent(Intent intent) {
 		this.setIntent(intent);
-		String deviceId = this.getIntent().getStringExtra("configuredDeviceId");
+		String deviceId = intent.getStringExtra("configuredDeviceId");
+
 		if (deviceId != null && deviceId.length() > 0) {
 			postDeviceId(deviceId);
+		}
+
+		String notificationCategory = intent.getStringExtra("ALARM");
+		if (notificationCategory != null) {
+			if (notificationCategory.contentEquals("dismiss")) {
+				this.dismissAlarms();
+			}
 		}
 	}
 
@@ -214,13 +259,8 @@ public class MainActivity extends AppCompatActivity
 
 	public void registerWithNotificationHubs()
 	{
-		Log.i("info", " Registering with Notification Hubs");
-
-		if (checkPlayServices()) {
-			// Start IntentService to register this application with GCM.
-			Intent intent = new Intent(this, RegistrationIntentService.class);
-			startService(intent);
-		}
+		String FCM_token = FirebaseInstanceId.getInstance().getToken();
+		postNotificationRegistration(FCM_token);
 	}
 
 	@Override
@@ -381,7 +421,13 @@ public class MainActivity extends AppCompatActivity
 
 	@Override
 	public void dismissAlarms() {
-		dismissAlarmsAsync();
+		this.dismissAlarmsAsync();
+		if (mAlarmStatus != null) {
+			mAlarmStatus.setText("Alarm Status: Idle");
+		}
+		if (mPlayer.isPlaying()) {
+			mPlayer.stop();
+		}
 	}
 
 	@Override
@@ -399,88 +445,35 @@ public class MainActivity extends AppCompatActivity
 		generateSecondaryUserAsync();
 	}
 
-	public void getAlarmsAsync() {
-		httpClient.newCall(BuildGetAlarmsRequest(this.authIdToken)).enqueue(new Callback() {
+	private void getAlarmsAsync() {
+		wakeCloud.getAlarmsAsync(new WakeCloudClient.AlarmsResponseTask() {
 			@Override
-			public void onResponse(Call call, final Response response) throws IOException {
-				Log.e("GET Alarms", Integer.toString(response.code()));
-				if (response.isSuccessful()) {
-					final String rawJsonData = response.body().string();
-					ObjectMapper mapper = new ObjectMapper();
-					// TODO: catch exceptions here
-
-					// Deserialize the alarmBody here
-					final AlarmBody result = mapper.readValue(rawJsonData, AlarmBody.class);
-
-					runOnUiThread(new Runnable() {
-						@Override
-						public void run() {
-							mAlarms.clear();
-							for (AlarmDto alarmDto : result.getAlarms()) {
-								mAlarms.add(mapAlarm(alarmDto));
-							}
-						}
-					});
+			public void executeTask(AlarmBody alarm) {
+				mAlarms.clear();
+				for (AlarmDto alarmDto : alarm.getAlarms()) {
+					mAlarms.add(mapAlarm(alarmDto));
 				}
-				else {
-					Log.e("onResponse fail: ", response.body().string());
-					throw new IOException("Http failure");
-				}
-			}
-
-			@Override
-			public void onFailure(Call call, IOException e) {
-				e.printStackTrace();
 			}
 		});
 	}
 
 	public void getUserInfoAsync() {
-		httpClient.newCall(BuildGetUserRequest(this.authIdToken)).enqueue(new Callback() {
+		wakeCloud.getUserInfoAsync(new WakeCloudClient.UserResponseTask() {
 			@Override
-			public void onResponse(Call call, final Response response) throws IOException {
-				Log.e("GET User Info", Integer.toString(response.code()));
-				if (response.isSuccessful()) {
-					final String rawJsonData = response.body().string();
-					ObjectMapper mapper = new ObjectMapper();
-					final UserDto user = mapper.readValue(rawJsonData, UserDto.class);
+			void executeTask(UserDto user) {
+				mCurrentUser = user;
 
-					mCurrentUser = user;
-
-					if (user.isRegistered()) {
-						getAlarmsAsync();
-						runOnUiThread(new Runnable() {
-							@Override
-							public void run() {
-								initAlarmFragment();
-							}
-						});
-					}
-
-					else {
-						// init onboarding
-						runOnUiThread(new Runnable() {
-							@Override
-							public void run() {
-								mIsOnboarding = true;
-								getSupportActionBar().setTitle("Setup");
-								setNewFragment(new OnboardingFragment(), false, "baseOnboarding");
-								mDrawerToggle.setDrawerIndicatorEnabled(false);
-								// TODO: reset the title again back to "wake"
-							}
-						});
-
-					}
+				if (user.isRegistered()) {
+					getAlarmsAsync();
+					initAlarmFragment();
 				}
 				else {
-					Log.e("onResponse fail: ", response.body().string());
-					throw new IOException("Http failure");
+					// init onboarding
+					mIsOnboarding = true;
+					getSupportActionBar().setTitle("Setup");
+					setNewFragment(new OnboardingFragment(), false, "baseOnboarding");
+					mDrawerToggle.setDrawerIndicatorEnabled(false);
 				}
-			}
-
-			@Override
-			public void onFailure(Call call, IOException e) {
-				e.printStackTrace();
 			}
 		});
 	}
@@ -519,170 +512,44 @@ public class MainActivity extends AppCompatActivity
 	}
 
 	public void postAlarmsAsync() {
-		httpClient.newCall(BuildPostAlarmsRequest(mAlarms, this.authIdToken)).enqueue(new Callback() {
-			@Override
-			public void onResponse(Call call, final Response response) throws IOException {
-				Log.e("POST Alarms", Integer.toString(response.code()));
-				if (response.isSuccessful()) {
+		wakeCloud.postAlarmsAsync(this.mAlarms);
+	}
 
-				}
-				else {
-					throw new IOException("Http failure");
-				}
-			}
-
-			@Override
-			public void onFailure(Call call, IOException e) {
-				e.printStackTrace();
-			}
-		});
+	public void postNotificationRegistration(final String deviceId) {
+		wakeCloud.postNotificationRegistration(deviceId);
 	}
 
 	public void putUserAsync() {
-		httpClient.newCall(BuildPutUserRequest(mCurrentUser, this.authIdToken)).enqueue(new Callback() {
-			@Override
-			public void onResponse(Call call, final Response response) throws IOException {
-				Log.e("Put User Async: ", Integer.toString(response.code()));
-				if (response.isSuccessful()) {
-
-				}
-				else {
-					throw new IOException("Http failure");
-				}
-			}
-
-			@Override
-			public void onFailure(Call call, IOException e) {
-				e.printStackTrace();
-			}
-		});
+		wakeCloud.putUserAsync(this.mCurrentUser);
 	}
 
 	public void dismissAlarmsAsync() {
-		httpClient.newCall(
-			new Request.Builder()
-				.header("Authorization", "bearer " + this.authIdToken)
-				.header("Content-Type","application/json")
-				.post(RequestBody.create(MEDIA_TYPE_JSON, ""))
-				.url("http://wakeuserapi.azurewebsites.net/v1/alarms/stop")
-				.build())
-			.enqueue(new Callback() {
-				@Override
-				public void onResponse(Call call, final Response response) throws IOException {
-					Log.e("Dismiss Alarm", Integer.toString(response.code()));
-					if (response.isSuccessful()) {
-
-					}
-					else {
-						throw new IOException("Http failure");
-					}
-				}
-
-				@Override
-				public void onFailure(Call call, IOException e) {
-					e.printStackTrace();
-				}
-		});
+		wakeCloud.dismissAlarmsAsync();
 	}
 
 	public void getAlarmDemoAsync() {
-		httpClient.newCall(
-				new Request.Builder()
-						.header("Authorization", "bearer " + this.authIdToken)
-						.header("Content-Type","application/json")
-						.url("http://wakeuserapi.azurewebsites.net/v1/devices/demo/port")
-						.build())
-				.enqueue(new Callback() {
-					@Override
-					public void onResponse(Call call, final Response response) throws IOException {
-						Log.e("Alarm Demo", Integer.toString(response.code()));
-						if (response.isSuccessful()) {
-
-						}
-						else {
-							throw new IOException("Http failure");
-						}
-					}
-
-					@Override
-					public void onFailure(Call call, IOException e) {
-						e.printStackTrace();
-					}
-				});
+		wakeCloud.getAlarmDemoAsync();
 	}
 
 	public void createSecondaryUserAsync(String code) {
-		httpClient.newCall(
-			new Request.Builder()
-					.header("Authorization", "bearer " + this.authIdToken)
-					.header("Content-Type","application/json")
-					.post(RequestBody.create(MEDIA_TYPE_JSON, ""))
-					.url("http://wakeuserapi.azurewebsites.net/v1/users/code/" + code)
-					.build())
-			.enqueue(new Callback() {
-				@Override
-				public void onResponse(Call call, final Response response) throws IOException {
-					Log.e("Second User Code", Integer.toString(response.code()));
-					if (response.isSuccessful()) {
-						final String rawJsonData = response.body().string();
-						ObjectMapper mapper = new ObjectMapper();
-						final UserDto user = mapper.readValue(rawJsonData, UserDto.class);
-
-						mCurrentUser = user;
-						runOnUiThread(new Runnable() {
-							@Override
-							public void run() {
-								mConfirmationDialog.show();
-							}
-						});
-					}
-					else {
-						throw new IOException("Http failure");
-					}
-				}
-
-				@Override
-				public void onFailure(Call call, IOException e) {
-					e.printStackTrace();
-				}
-			});
+		wakeCloud.createSecondaryUserAsync(code, new WakeCloudClient.CreateSecondaryUserResponseTask() {
+			@Override
+			public void executeTask(UserDto user) {
+				mCurrentUser = user;
+				mConfirmationDialog.show();
+			}
+		});
 	}
 
 	public void generateSecondaryUserAsync() {
-		httpClient.newCall(
-			new Request.Builder()
-					.header("Authorization", "bearer " + this.authIdToken)
-					.header("Content-Type","application/json")
-					.url("http://wakeuserapi.azurewebsites.net/v1/users/code")
-					.build())
-			.enqueue(new Callback() {
-				@Override
-				public void onResponse(Call call, final Response response) throws IOException {
-					Log.e("HTTP STATUS CODE", Integer.toString(response.code()));
-					if (response.isSuccessful()) {
-						final String rawJsonData = response.body().string();
-						ObjectMapper mapper = new ObjectMapper();
-						final SecondaryUserCodeDto codeBody = mapper.readValue(rawJsonData, SecondaryUserCodeDto.class);
-
-						runOnUiThread(new Runnable() {
-							@Override
-							public void run() {
-								mErrorDialog.setTitle("Secondary User Code");
-								mErrorDialog.setMessage(codeBody.getCode());
-								mErrorDialog.show();
-							}
-						});
-					}
-					else {
-						throw new IOException("Http failure");
-					}
-				}
-
-				@Override
-				public void onFailure(Call call, IOException e) {
-					e.printStackTrace();
-				}
-			});
+		wakeCloud.generateSecondaryUserAsync(new WakeCloudClient.SecondaryUserGenerationResponseTask() {
+			@Override
+			public void executeTask(SecondaryUserCodeDto codeBody) {
+				mErrorDialog.setTitle("Secondary User Code");
+				mErrorDialog.setMessage(codeBody.getCode());
+				mErrorDialog.show();
+			}
+		});
 	}
 
 	@Override
@@ -705,65 +572,6 @@ public class MainActivity extends AppCompatActivity
 		getSupportActionBar().setTitle(getResources().getString(R.string.app_name));
 		mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
 		newFragmentTransaction.commit();
-	}
-
-	private static Request BuildGetAlarmsRequest(String authId) {
-		return new Request.Builder()
-			.header("Authorization", "bearer " + authId)
-			.header("Content-Type","application/json")
-			.url("http://wakeuserapi.azurewebsites.net/v1/alarms")
-			.build();
-	}
-
-	private static Request BuildGetUserRequest(String authId) {
-		return new Request.Builder()
-			.header("Authorization", "bearer " + authId)
-			.header("Content-Type","application/json")
-			.url("http://wakeuserapi.azurewebsites.net/v1/users")
-			.build();
-	}
-
-	private static Request BuildPutUserRequest(UserDto user, String authId) {
-		ObjectMapper objectMapper = new ObjectMapper();
-		final ObjectWriter w = objectMapper.writer();
-		UserBody body = new UserBody(user);
-		try {
-			byte[] json = w.writeValueAsBytes(body);
-
-			return new Request.Builder()
-					.header("Authorization", "bearer " + authId)
-					.header("Content-Type","application/json")
-					.put(RequestBody.create(MEDIA_TYPE_JSON, json))
-					.url("http://wakeuserapi.azurewebsites.net/v1/users")
-					.build();
-		} catch (JsonProcessingException e) {
-			e.printStackTrace();
-			return new Request.Builder().build();
-		}
-	}
-
-	private static Request BuildPostAlarmsRequest(ObservableArrayList<Alarm> alarms, String authId) {
-		List<AlarmDto> alarmDtos = new ArrayList();
-		for (Alarm model : alarms) {
-			alarmDtos.add(mapAlarm(model));
-		}
-
-		AlarmBody body = new AlarmBody(alarmDtos);
-		ObjectMapper objectMapper = new ObjectMapper();
-		final ObjectWriter w = objectMapper.writer();
-		try {
-			byte[] json = w.writeValueAsBytes(body);
-
-			return new Request.Builder()
-					.header("Authorization", "bearer " + authId)
-					.header("Content-Type","application/json")
-					.post(RequestBody.create(MEDIA_TYPE_JSON, json))
-					.url("http://wakeuserapi.azurewebsites.net/v1/alarms")
-					.build();
-		} catch (JsonProcessingException e) {
-			e.printStackTrace();
-			return new Request.Builder().build();
-		}
 	}
 
 	private AlertDialog buildConfirmationDialog(Context context) {
@@ -807,21 +615,21 @@ public class MainActivity extends AppCompatActivity
 		);
 	}
 
-	private static AlarmDto mapAlarm(Alarm alarm) {
-		return new AlarmDto(
-				alarm.getUserID(),
-				alarm.getLabel(),
-				alarm.getSynchronized(),
-				alarm.getEnabled(),
-				alarm.getHour(),
-				alarm.getMinute(),
-				alarm.getIntegerDays(),
-				alarm.getAudio(),
-				alarm.getDuration(),
-				alarm.getBrightness(),
-				alarm.getVolume(),
-				alarm.getAllowSnooze(),
-				alarm.getCreatedAt()
-		);
+	private void startPlayer() {
+		try {
+			// Player setup is here
+			String ringtone = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM).toString();
+			mPlayer.setDataSource(this, Uri.parse(ringtone));
+			mPlayer.setLooping(true);
+			mPlayer.setAudioStreamType(AudioManager.STREAM_ALARM);
+			mPlayer.setVolume(MAX_VOLUME, MAX_VOLUME);
+			mPlayer.prepare();
+			mPlayer.start();
+
+		} catch (Exception e) {
+			if (mPlayer.isPlaying()) {
+				mPlayer.stop();
+			}
+		}
 	}
 }

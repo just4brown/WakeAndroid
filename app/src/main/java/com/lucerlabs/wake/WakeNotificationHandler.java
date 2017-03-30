@@ -8,7 +8,11 @@ import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
+import android.util.Log;
+
 import com.microsoft.windowsazure.notifications.NotificationsHandler;
+
+import java.util.Set;
 
 public class WakeNotificationHandler extends NotificationsHandler {
 	public static final int NOTIFICATION_ID = 1;
@@ -19,14 +23,31 @@ public class WakeNotificationHandler extends NotificationsHandler {
 	@Override
 	public void onReceive(Context context, Bundle bundle) {
 		ctx = context;
-		String nhMessage = bundle.getString("message");
-		sendNotification(nhMessage);
+		if (bundle != null) {
+			String message = bundle.getString("body");
+			String from = bundle.getString("from");
+			String category = bundle.getString("category");
+			String sound = bundle.getString("sound");
+			String title = bundle.getString("title");
+			String time = bundle.getString("google.sent_time");
+			Log.e("Notification received ", from + " " + category + " " + sound + " " + time + " " + title);
+			sendNotification(ctx, message, title, category);
+
+			Intent intent = new Intent("alarmStatus");
+			intent.putExtra("category", category);
+			ctx.sendBroadcast(intent);
+		}
 	}
 
-	private void sendNotification(String msg) {
+	private void sendNotification(Context ctx, String msg, String title, String category) {
 
 		Intent intent = new Intent(ctx, MainActivity.class);
 		intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+
+		Intent dismissIntent = new Intent(ctx, MainActivity.class);
+		dismissIntent.putExtra("ALARM", "dismiss");
+
+		PendingIntent dismissActionIntent = PendingIntent.getActivity(ctx, 200, dismissIntent, PendingIntent.FLAG_CANCEL_CURRENT);
 
 		mNotificationManager = (NotificationManager)
 				ctx.getSystemService(Context.NOTIFICATION_SERVICE);
@@ -38,11 +59,12 @@ public class WakeNotificationHandler extends NotificationsHandler {
 		NotificationCompat.Builder mBuilder =
 				new NotificationCompat.Builder(ctx)
 						.setSmallIcon(R.mipmap.ic_launcher)
-						.setContentTitle(ctx.getResources().getString(R.string.app_name))
+						.setContentTitle(title)
 						.setStyle(new NotificationCompat.BigTextStyle()
 								.bigText(msg))
 						.setSound(defaultSoundUri)
-						.setContentText(msg);
+						.setContentText(msg)
+						.addAction(R.drawable.ic_alarm_off_black_24dp, "Dismiss", dismissActionIntent);
 
 		mBuilder.setContentIntent(contentIntent);
 		mNotificationManager.notify(NOTIFICATION_ID, mBuilder.build());
