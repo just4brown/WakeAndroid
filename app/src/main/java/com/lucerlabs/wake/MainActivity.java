@@ -44,6 +44,7 @@ import io.particle.android.sdk.devicesetup.ParticleDeviceSetupLibrary;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.games.event.Events;
+import com.google.firebase.crash.FirebaseCrash;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.microsoft.windowsazure.messaging.NotificationHub;
 import com.microsoft.windowsazure.notifications.NotificationsManager;
@@ -99,6 +100,25 @@ public class MainActivity extends AppCompatActivity
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		final Thread.UncaughtExceptionHandler defaultAppExceptionHandler = Thread.getDefaultUncaughtExceptionHandler();
+		Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+			@Override
+			public void uncaughtException(Thread thread, Throwable throwable) {
+				String userId = "user not set";
+				if (mCurrentUser != null) {
+					userId = Integer.toString(mCurrentUser.getUserID());
+				}
+				FirebaseCrash.log("UserId: " + userId);
+				FirebaseCrash.report(throwable);
+				if (defaultAppExceptionHandler != null) {
+					defaultAppExceptionHandler.uncaughtException(thread, throwable);
+				} else {
+					System.exit(2);
+				}
+
+			}
+		});
+
 		Credentials credentials = CredentialsManager.getCredentials(this);
 		if (credentials == null) {
 			doSignOut();
