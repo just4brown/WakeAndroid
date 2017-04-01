@@ -72,15 +72,11 @@ public class MainActivity extends AppCompatActivity
 	private SharedPreferences mSharedPreferences;
 	private WakeCloudClient wakeCloud;
 	private MediaPlayer mPlayer;
-	private TextView mAlarmStatus;
 	private BroadcastReceiver mNotificationReceiver = new BroadcastReceiver() {
 		@Override
 		public void onReceive(Context context, Intent intent) {
 			String category = intent.getStringExtra("category");
 			if (category != null) {
-				if (mAlarmStatus != null) {
-					mAlarmStatus.setText("Alarm Status: Alarming");
-				}
 				if (category.contentEquals("BACKUP_ALARM")) {
 					startPlayer();
 				}
@@ -153,7 +149,6 @@ public class MainActivity extends AppCompatActivity
 				}
 			}
 		});
-		mAlarmStatus = (TextView) findViewById(R.id.alarm_status_indicator);
 
 		NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
 		navigationView.setNavigationItemSelectedListener(this);
@@ -442,9 +437,6 @@ public class MainActivity extends AppCompatActivity
 	@Override
 	public void dismissAlarms() {
 		this.dismissAlarmsAsync();
-		if (mAlarmStatus != null) {
-			mAlarmStatus.setText("Alarm Status: Idle");
-		}
 		if (mPlayer.isPlaying()) {
 			mPlayer.stop();
 		}

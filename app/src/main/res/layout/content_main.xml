@@ -34,16 +34,6 @@
 
     </LinearLayout>
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Alarm Status: Idle"
-        android:textAlignment="center"
-        android:textColor="@color/clock_white"
-        android:paddingTop="12dp"
-        android:paddingBottom="12dp"
-        android:id="@+id/alarm_status_indicator"/>
-
     <android.support.v7.widget.RecyclerView
         android:id="@+id/alarms"
         android:layout_width="match_parent"
