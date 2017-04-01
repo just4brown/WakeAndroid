@@ -482,6 +482,20 @@ public class MainActivity extends AppCompatActivity
 		});
 	}
 
+	private void getAudioTracksAsync() {
+		wakeCloud.getAudioTracksAsync(new WakeCloudClient.ResponseTask<AudioTracksBody>() {
+			@Override
+			public void executeTask(AudioTracksBody body) {
+				// TODO update UI with tracks
+			}
+
+			@Override
+			void onError(int code) {
+				FirebaseCrash.log("getAudioTracks error: " + code);
+			}
+		});
+	}
+
 	public void getUserInfoAsync() {
 		wakeCloud.getUserInfoAsync(new WakeCloudClient.ResponseTask<UserDto>() {
 			@Override
