@@ -128,6 +128,7 @@ public class MainActivity extends AppCompatActivity
 			doSignOut();
 		}
 
+		wakeCloud = new WakeCloudClient(this.authIdToken, credentials.getRefreshToken(), new Handler(Looper.getMainLooper()));
 		setContentView(R.layout.activity_main);
 
 		mainActivity = this;
@@ -160,7 +161,6 @@ public class MainActivity extends AppCompatActivity
 
 		Auth0 auth0 = new Auth0(getString(R.string.auth0_client_id), getString(R.string.auth0_domain));
 		client = new AuthenticationAPIClient(auth0);
-		wakeCloud = new WakeCloudClient(this.authIdToken, new Handler(Looper.getMainLooper()));
 
 		final TimePickerDialog.OnTimeSetListener timePickerListener = new TimePickerDialog.OnTimeSetListener() {
 			@Override
@@ -466,7 +466,7 @@ public class MainActivity extends AppCompatActivity
 	}
 
 	private void getAlarmsAsync() {
-		wakeCloud.getAlarmsAsync(new WakeCloudClient.AlarmsResponseTask() {
+		wakeCloud.getAlarmsAsync(new WakeCloudClient.ResponseTask<AlarmBody>() {
 			@Override
 			public void executeTask(AlarmBody alarm) {
 				mAlarms.clear();
@@ -474,11 +474,16 @@ public class MainActivity extends AppCompatActivity
 					mAlarms.add(mapAlarm(alarmDto));
 				}
 			}
+
+			@Override
+			void onError(int code) {
+				FirebaseCrash.log("getAlarms error: " + code);
+			}
 		});
 	}
 
 	public void getUserInfoAsync() {
-		wakeCloud.getUserInfoAsync(new WakeCloudClient.UserResponseTask() {
+		wakeCloud.getUserInfoAsync(new WakeCloudClient.ResponseTask<UserDto>() {
 			@Override
 			void executeTask(UserDto user) {
 				mCurrentUser = user;
@@ -494,6 +499,11 @@ public class MainActivity extends AppCompatActivity
 					setNewFragment(new OnboardingFragment(), false, "baseOnboarding");
 					mDrawerToggle.setDrawerIndicatorEnabled(false);
 				}
+			}
+
+			@Override
+			void onError(int code) {
+				FirebaseCrash.log("getUser error: " + code);
 			}
 		});
 	}
@@ -552,22 +562,32 @@ public class MainActivity extends AppCompatActivity
 	}
 
 	public void createSecondaryUserAsync(String code) {
-		wakeCloud.createSecondaryUserAsync(code, new WakeCloudClient.CreateSecondaryUserResponseTask() {
+		wakeCloud.createSecondaryUserAsync(code, new WakeCloudClient.ResponseTask<UserDto>() {
 			@Override
 			public void executeTask(UserDto user) {
 				mCurrentUser = user;
 				mConfirmationDialog.show();
 			}
+
+			@Override
+			void onError(int code) {
+				FirebaseCrash.log("createSecondaryUser error: " + code);
+			}
 		});
 	}
 
 	public void generateSecondaryUserAsync() {
-		wakeCloud.generateSecondaryUserAsync(new WakeCloudClient.SecondaryUserGenerationResponseTask() {
+		wakeCloud.generateSecondaryUserAsync(new WakeCloudClient.ResponseTask<SecondaryUserCodeDto>() {
 			@Override
 			public void executeTask(SecondaryUserCodeDto codeBody) {
 				mErrorDialog.setTitle("Secondary User Code");
 				mErrorDialog.setMessage(codeBody.getCode());
 				mErrorDialog.show();
+			}
+
+			@Override
+			void onError(int code) {
+				FirebaseCrash.log("generateSecondaryUserCode error: " + code);
 			}
 		});
 	}

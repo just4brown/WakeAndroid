@@ -3,6 +3,11 @@ package com.lucerlabs.wake;
 import android.databinding.ObservableArrayList;
 import android.os.Handler;
 import android.util.Log;
+
+import com.auth0.android.authentication.AuthenticationAPIClient;
+import com.auth0.android.authentication.AuthenticationException;
+import com.auth0.android.callback.BaseCallback;
+import com.auth0.android.result.Delegation;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
@@ -18,83 +23,143 @@ import okhttp3.Response;
 
 public class WakeCloudClient {
 	private String authIdToken;
+	private String refreshToken;
 	public static final okhttp3.MediaType MEDIA_TYPE_JSON = okhttp3.MediaType.parse("application/json; charset=utf-8");
 	private final OkHttpClient httpClient = new OkHttpClient();
 	private final Handler UIThreadHandler;
+	private AuthenticationAPIClient auth0Client;
 
-	public WakeCloudClient(String token, Handler handler) {
+	public WakeCloudClient(String token, String refreshToken, Handler handler) {
 		this.authIdToken = token;
 		this.UIThreadHandler = handler;
+		this.refreshToken = refreshToken;
 	}
 
-	public static abstract class AlarmsResponseTask {
-		abstract void executeTask(AlarmBody alarm);
+	public static abstract class ResponseTask<T> {
+		abstract void executeTask(T body);
+		abstract void onError(int errorCode);
 	}
 
-	public static abstract class UserResponseTask {
-		abstract void executeTask(UserDto user);
-	}
-
-	public static abstract class CreateSecondaryUserResponseTask {
-		abstract void executeTask(UserDto code);
-	}
-
-	public static abstract class SecondaryUserGenerationResponseTask {
-		abstract void executeTask(SecondaryUserCodeDto codeBody);
-	}
-
-	public void getAlarmsAsync(final AlarmsResponseTask task) {
-		httpClient.newCall(BuildGetAlarmsRequest(this.authIdToken)).enqueue(new Callback() {
+	private <T> void makeWebRequest(final Request request, final OkHttpClient client, final ResponseTask<T> task, final Handler responseHandler, final Class<T> classOfT) {
+		client.newCall(request).enqueue(new Callback() {
 			@Override
 			public void onResponse(Call call, final Response response) throws IOException {
-				Log.e("GET Alarms", Integer.toString(response.code()));
-				if (response.isSuccessful()) {
+				final int responseCode = response.code();
+				if (responseCode == 200) {
 					final String rawJsonData = response.body().string();
 					ObjectMapper mapper = new ObjectMapper();
 					// TODO: catch exceptions here
 
-					// Deserialize the alarmBody here
-					final AlarmBody result = mapper.readValue(rawJsonData, AlarmBody.class);
-					UIThreadHandler.post(new Runnable() {
+					// Deserialize the responseBody here
+					final T result = mapper.readValue(rawJsonData, classOfT);
+					responseHandler.post(new Runnable() {
 						@Override
 						public void run() {
 							task.executeTask(result);
 						}
 					});
-				}
-				else {
-					Log.e("onResponse fail: ", response.body().string());
-					throw new IOException("Http failure");
-				}
-			}
+				} else if (responseCode == 401) {
+					auth0Client.delegationWithRefreshToken(refreshToken)
+						.start(new BaseCallback<Delegation, AuthenticationException>() {
+							@Override
+							public void onSuccess(Delegation payload) {
+								authIdToken = payload.getIdToken();
+								Request newRequest = request.newBuilder().header("Authorization", "bearer " + authIdToken).build();
+								client.newCall(newRequest).enqueue(new Callback() {
+									@Override
+									public void onResponse(Call call, final Response response) throws IOException {
+										final int responseCode = response.code();
+										if (responseCode == 200) {
+											final String rawJsonData = response.body().string();
+											ObjectMapper mapper = new ObjectMapper();
+											// TODO: catch exceptions here
 
-			@Override
-			public void onFailure(Call call, IOException e) {
-				e.printStackTrace();
-			}
-		});
-	}
+											// Deserialize the responseBody here
+											final T result = mapper.readValue(rawJsonData, classOfT);
+											responseHandler.post(new Runnable() {
+												@Override
+												public void run() {
+													task.executeTask(result);
+												}
+											});
+										} else {
+											responseHandler.post(new Runnable() {
+												@Override
+												public void run() {
+													task.onError(responseCode);
+												}
+											});
+										}
+									}
 
-	public void getUserInfoAsync(final UserResponseTask task) {
-		httpClient.newCall(BuildGetUserRequest(this.authIdToken)).enqueue(new Callback() {
-			@Override
-			public void onResponse(Call call, final Response response) throws IOException {
-				Log.e("GET User Info", Integer.toString(response.code()));
-				if (response.isSuccessful()) {
-					final String rawJsonData = response.body().string();
-					ObjectMapper mapper = new ObjectMapper();
-					final UserDto user = mapper.readValue(rawJsonData, UserDto.class);
+									@Override
+									public void onFailure(Call call, IOException e) {
+										e.printStackTrace();
+									}
+								});
+							}
 
-					UIThreadHandler.post(new Runnable() {
+							@Override
+							public void onFailure(AuthenticationException error) {
+								responseHandler.post(new Runnable() {
+									@Override
+									public void run() {
+										task.onError(responseCode);
+									}
+								});
+							}
+						});
+				} else {
+					responseHandler.post(new Runnable() {
 						@Override
 						public void run() {
-							task.executeTask(user);
+							task.onError(responseCode);
 						}
 					});
 				}
-				else {
-					Log.e("onResponse fail: ", response.body().string());
-					throw new IOException("Http failure");
+			}
+
+			@Override
+			public void onFailure(Call call, IOException e) {
+				e.printStackTrace();
+			}
+		});
+	}
+
+	private void makeWebRequest(final Request request, final OkHttpClient client) {
+		client.newCall(request).enqueue(new Callback() {
+			@Override
+			public void onResponse(Call call, final Response response) throws IOException {
+				int responseCode = response.code();
+				if (responseCode == 401) {
+					auth0Client.delegationWithRefreshToken(refreshToken)
+						.start(new BaseCallback<Delegation, AuthenticationException>() {
+							@Override
+							public void onSuccess(Delegation payload) {
+								authIdToken = payload.getIdToken();
+								Request newRequest = request.newBuilder().header("Authorization", "bearer " + authIdToken).build();
+								client.newCall(newRequest).enqueue(new Callback() {
+									@Override
+									public void onResponse(Call call, final Response response) throws IOException {
+										int responseCode = response.code();
+										if (responseCode != 200) {
+											// TODO: report error
+										}
+									}
+
+									@Override
+									public void onFailure(Call call, IOException e) {
+										e.printStackTrace();
+									}
+								});
+							}
+
+							@Override
+							public void onFailure(AuthenticationException error) {
+							}
+						});
+				} else {
+					// TODO: report error
 				}
 			}
 
@@ -103,190 +168,74 @@ public class WakeCloudClient {
 				e.printStackTrace();
 			}
 		});
+	}
+
+	public void getAlarmsAsync(final ResponseTask task) {
+		makeWebRequest(BuildGetAlarmsRequest(this.authIdToken), this.httpClient, task, this.UIThreadHandler, AlarmBody.class);
+	}
+
+	public void getUserInfoAsync(final ResponseTask task) {
+		makeWebRequest(BuildGetUserRequest(this.authIdToken), this.httpClient, task, this.UIThreadHandler, UserDto.class);
 	}
 
 	public void postAlarmsAsync(ObservableArrayList<Alarm> alarms) {
-		httpClient.newCall(BuildPostAlarmsRequest(alarms, this.authIdToken)).enqueue(new Callback() {
-			@Override
-			public void onResponse(Call call, final Response response) throws IOException {
-				Log.e("POST Alarms", Integer.toString(response.code()));
-				if (response.isSuccessful()) {
-
-				}
-				else {
-					throw new IOException("Http failure");
-				}
-			}
-
-			@Override
-			public void onFailure(Call call, IOException e) {
-				e.printStackTrace();
-			}
-		});
+		makeWebRequest(BuildPostAlarmsRequest(alarms, this.authIdToken), this.httpClient);
 	}
 
 	public void postNotificationRegistration(final String deviceId) {
-		httpClient.newCall(BuildNotificationSubscriptionRequest(deviceId, this.authIdToken)).enqueue(new Callback() {
-			@Override
-			public void onResponse(Call call, final Response response) throws IOException {
-				Log.e("POST ", "Notification Registration " + Integer.toString(response.code()));
-				if (response.isSuccessful()) {
-
-				}
-				else {
-					throw new IOException("Http failure");
-				}
-			}
-
-			@Override
-			public void onFailure(Call call, IOException e) {
-				e.printStackTrace();
-			}
-		});
+		makeWebRequest(BuildNotificationSubscriptionRequest(deviceId, this.authIdToken), this.httpClient);
 	}
 
 	public void putUserAsync(UserDto user) {
-		httpClient.newCall(BuildPutUserRequest(user, this.authIdToken)).enqueue(new Callback() {
-			@Override
-			public void onResponse(Call call, final Response response) throws IOException {
-				Log.e("Put User Async: ", Integer.toString(response.code()));
-				if (response.isSuccessful()) {
-
-				}
-				else {
-					throw new IOException("Http failure");
-				}
-			}
-
-			@Override
-			public void onFailure(Call call, IOException e) {
-				e.printStackTrace();
-			}
-		});
+		makeWebRequest(BuildPutUserRequest(user, this.authIdToken), this.httpClient);
 	}
 
 	public void dismissAlarmsAsync() {
-		httpClient.newCall(
+		makeWebRequest(
 			new Request.Builder()
-					.header("Authorization", "bearer " + this.authIdToken)
-					.header("Content-Type","application/json")
-					.post(RequestBody.create(MEDIA_TYPE_JSON, ""))
-					.url("http://wakeuserapi.azurewebsites.net/v1/alarms/stop")
-					.build())
-			.enqueue(new Callback() {
-				@Override
-				public void onResponse(Call call, final Response response) throws IOException {
-					Log.e("Dismiss Alarm", Integer.toString(response.code()));
-					if (response.isSuccessful()) {
-
-					}
-					else {
-						throw new IOException("Http failure");
-					}
-				}
-
-				@Override
-				public void onFailure(Call call, IOException e) {
-					e.printStackTrace();
-				}
-			});
+				.header("Authorization", "bearer " + this.authIdToken)
+				.header("Content-Type","application/json")
+				.post(RequestBody.create(MEDIA_TYPE_JSON, ""))
+				.url("http://wakeuserapi.azurewebsites.net/v1/alarms/stop")
+				.build(),
+			this.httpClient);
 	}
 
 	public void getAlarmDemoAsync() {
-		httpClient.newCall(
+		makeWebRequest(
 			new Request.Builder()
 					.header("Authorization", "bearer " + this.authIdToken)
 					.header("Content-Type","application/json")
 					.url("http://wakeuserapi.azurewebsites.net/v1/devices/demo/port")
-					.build())
-			.enqueue(new Callback() {
-				@Override
-				public void onResponse(Call call, final Response response) throws IOException {
-					Log.e("Alarm Demo", Integer.toString(response.code()));
-					if (response.isSuccessful()) {
-
-					}
-					else {
-						throw new IOException("Http failure");
-					}
-				}
-
-				@Override
-				public void onFailure(Call call, IOException e) {
-					e.printStackTrace();
-				}
-			});
+					.build(),
+			this.httpClient);
 	}
 
-	public void createSecondaryUserAsync(String code, final CreateSecondaryUserResponseTask task) {
-		httpClient.newCall(
+	public void createSecondaryUserAsync(String code, final ResponseTask task) {
+		makeWebRequest(
 			new Request.Builder()
-					.header("Authorization", "bearer " + this.authIdToken)
-					.header("Content-Type","application/json")
-					.post(RequestBody.create(MEDIA_TYPE_JSON, ""))
-					.url("http://wakeuserapi.azurewebsites.net/v1/users/code/" + code)
-					.build())
-			.enqueue(new Callback() {
-				@Override
-				public void onResponse(Call call, final Response response) throws IOException {
-					Log.e("Second User Code", Integer.toString(response.code()));
-					if (response.isSuccessful()) {
-						final String rawJsonData = response.body().string();
-						ObjectMapper mapper = new ObjectMapper();
-						final UserDto user = mapper.readValue(rawJsonData, UserDto.class);
-
-						UIThreadHandler.post(new Runnable() {
-							@Override
-							public void run() {
-								task.executeTask(user);
-							}
-						});
-					}
-					else {
-						throw new IOException("Http failure");
-					}
-				}
-
-				@Override
-				public void onFailure(Call call, IOException e) {
-					e.printStackTrace();
-				}
-			});
+				.header("Authorization", "bearer " + this.authIdToken)
+				.header("Content-Type","application/json")
+				.post(RequestBody.create(MEDIA_TYPE_JSON, ""))
+				.url("http://wakeuserapi.azurewebsites.net/v1/users/code/" + code)
+				.build(),
+			this.httpClient,
+			task,
+			this.UIThreadHandler,
+			UserDto.class);
 	}
 
-	public void generateSecondaryUserAsync(final SecondaryUserGenerationResponseTask task) {
-		httpClient.newCall(
-				new Request.Builder()
-						.header("Authorization", "bearer " + this.authIdToken)
-						.header("Content-Type","application/json")
-						.url("http://wakeuserapi.azurewebsites.net/v1/users/code")
-						.build())
-				.enqueue(new Callback() {
-					@Override
-					public void onResponse(Call call, final Response response) throws IOException {
-						Log.e("HTTP STATUS CODE", Integer.toString(response.code()));
-						if (response.isSuccessful()) {
-							final String rawJsonData = response.body().string();
-							ObjectMapper mapper = new ObjectMapper();
-							final SecondaryUserCodeDto codeBody = mapper.readValue(rawJsonData, SecondaryUserCodeDto.class);
-
-							UIThreadHandler.post(new Runnable() {
-								@Override
-								public void run() {
-									task.executeTask(codeBody);
-								}
-							});
-						}
-						else {
-							throw new IOException("Http failure");
-						}
-					}
-
-					@Override
-					public void onFailure(Call call, IOException e) {
-						e.printStackTrace();
-					}
-				});
+	public void generateSecondaryUserAsync(final ResponseTask task) {
+		makeWebRequest(
+			new Request.Builder()
+				.header("Authorization", "bearer " + this.authIdToken)
+				.header("Content-Type","application/json")
+				.url("http://wakeuserapi.azurewebsites.net/v1/users/code")
+				.build(),
+			this.httpClient,
+			task,
+			this.UIThreadHandler,
+				SecondaryUserCodeDto.class);
 	}
 
 	private static Request BuildGetAlarmsRequest(String authId) {

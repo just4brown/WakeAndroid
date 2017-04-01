@@ -58,6 +58,7 @@ public class WakeNotificationHandler extends NotificationsHandler {
 		Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
 		NotificationCompat.Builder mBuilder =
 				new NotificationCompat.Builder(ctx)
+						.setAutoCancel(true)
 						.setSmallIcon(R.mipmap.ic_launcher)
 						.setContentTitle(title)
 						.setStyle(new NotificationCompat.BigTextStyle()
