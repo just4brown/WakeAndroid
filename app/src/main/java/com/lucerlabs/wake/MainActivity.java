@@ -39,6 +39,8 @@ import com.auth0.android.authentication.AuthenticationException;
 import com.auth0.android.callback.BaseCallback;
 import com.auth0.android.result.Credentials;
 import com.auth0.android.result.UserProfile;
+
+import java.util.Set;
 import java.util.TimeZone;
 
 import io.particle.android.sdk.devicesetup.ParticleDeviceSetupLibrary;
@@ -430,7 +432,9 @@ public class MainActivity extends AppCompatActivity
 
 		if (id == R.id.nav_settings) {
 			addAlarmButton.setVisibility(View.INVISIBLE);
-			getFragmentManager().beginTransaction().replace(R.id.frame_content, new SettingsFragment()).commit();
+			SettingsFragment settingsFragment = new SettingsFragment();
+			settingsFragment.setPreferenceListener(this);
+			getFragmentManager().beginTransaction().replace(R.id.frame_content, settingsFragment).commit();
 		} else if (id == R.id.nav_alarms) {
 			addAlarmButton.setVisibility(View.VISIBLE);
 			getFragmentManager().beginTransaction().replace(R.id.frame_content, new AlarmsFragment()).commit();

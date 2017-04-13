@@ -116,6 +116,12 @@ public class SettingsFragment extends PreferenceFragment {
 		}
 	}
 
+	public void setPreferenceListener(SettingsFragmentListener listener) {
+		if (mListener == null) {
+			mListener = listener;
+		}
+	}
+
 	public interface SettingsFragmentListener {
 		void setNewFragment(Fragment fragment, boolean showBackButton, String tag);
 		void postSideOfBedPreference(String sideOfBed);
