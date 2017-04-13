@@ -55,6 +55,12 @@ public class SecondaryOnboardingFragment extends Fragment {
 		mSubmitButton = null;
 	}
 
+	public void setFragmentListener(SecondaryOnboardingFragmentListener listener) {
+		if (mListener == null) {
+			mListener = listener;
+		}
+	}
+
 	public interface SecondaryOnboardingFragmentListener {
 		void submitSecondaryUserCode(String code);
 	}

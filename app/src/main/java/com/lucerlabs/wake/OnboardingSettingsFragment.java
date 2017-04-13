@@ -81,6 +81,12 @@ public class OnboardingSettingsFragment extends PreferenceFragment {
 		}
 	}
 
+	public void setFragmentListener(SettingsFragment.SettingsFragmentListener listener) {
+		if (mListener == null) {
+			mListener = listener;
+		}
+	}
+
 	@Override
 	public void onDetach() {
 		super.onDetach();

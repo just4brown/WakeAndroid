@@ -12,6 +12,7 @@ import android.widget.Button;
 public class PrimaryOnboardingFragment extends Fragment {
 
 	private PrimaryOnboardingFragmentListener mListener;
+	private SettingsFragment.SettingsFragmentListener mSettingsListener;
 	private Button mBackButton;
 	private Button mFinishButton;
 
@@ -29,9 +30,10 @@ public class PrimaryOnboardingFragment extends Fragment {
 		if (existingFragment == null) {
 			existingFragment = new OnboardingSettingsFragment();
 		}
+		((OnboardingSettingsFragment) existingFragment).setFragmentListener(mSettingsListener);
 
 		FragmentTransaction transaction = getChildFragmentManager().beginTransaction();
-		transaction.replace(R.id.frame_onboarding_settings, existingFragment).commit();
+		transaction.replace(R.id.frame_onboarding_settings, existingFragment, "onboardingSettings").commit();
 		return mainView;
 	}
 
@@ -70,6 +72,18 @@ public class PrimaryOnboardingFragment extends Fragment {
 		mListener = null;
 		mBackButton = null;
 		mFinishButton = null;
+	}
+
+	public void setFragmentListener(PrimaryOnboardingFragmentListener listener) {
+		if (mListener == null) {
+			mListener = listener;
+		}
+	}
+
+	public void setPreferenceListener(SettingsFragment.SettingsFragmentListener listener) {
+		if (mSettingsListener == null) {
+			mSettingsListener = listener;
+		}
 	}
 
 	public interface PrimaryOnboardingFragmentListener {

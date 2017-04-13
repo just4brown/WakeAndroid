@@ -387,12 +387,17 @@ public class MainActivity extends AppCompatActivity
 
 	@Override
 	public void selectPrimaryUserOnboarding() {
-		setNewFragment(new PrimaryOnboardingFragment(), true, "primaryOnboarding");
+		PrimaryOnboardingFragment primaryOnboarding = new PrimaryOnboardingFragment();
+		primaryOnboarding.setFragmentListener(mainActivity);
+		primaryOnboarding.setPreferenceListener(mainActivity);
+		setNewFragment(primaryOnboarding, true, "primaryOnboarding");
 	}
 
 	@Override
 	public void selectSecondaryUserOnboarding() {
-		setNewFragment(new SecondaryOnboardingFragment(), true, "secondaryOnboarding");
+		SecondaryOnboardingFragment secondaryOnboarding = new SecondaryOnboardingFragment();
+		secondaryOnboarding.setFragmentListener(mainActivity);
+		setNewFragment(secondaryOnboarding, true, "secondaryOnboarding");
 	}
 
 	@Override
@@ -502,7 +507,9 @@ public class MainActivity extends AppCompatActivity
 					// init onboarding
 					mIsOnboarding = true;
 					getSupportActionBar().setTitle("Setup");
-					setNewFragment(new OnboardingFragment(), false, "baseOnboarding");
+					OnboardingFragment onboardingFragment = new OnboardingFragment();
+					onboardingFragment.setOnboardingFragmentListener(mainActivity);
+					setNewFragment(onboardingFragment, false, "baseOnboarding");
 					mDrawerToggle.setDrawerIndicatorEnabled(false);
 				}
 			}

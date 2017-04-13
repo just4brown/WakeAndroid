@@ -71,6 +71,12 @@ public class OnboardingFragment extends Fragment {
 		mSecondaryUserButton = null;
 	}
 
+	public void setOnboardingFragmentListener(OnboardingFragmentListener listener) {
+		if (mListener == null) {
+			mListener = listener;
+		}
+	}
+
 	public interface OnboardingFragmentListener {
 		void doSignOut();
 		void selectPrimaryUserOnboarding();
