@@ -29,10 +29,11 @@ public class WakeCloudClient {
 	private final Handler UIThreadHandler;
 	private AuthenticationAPIClient auth0Client;
 
-	public WakeCloudClient(String token, String refreshToken, Handler handler) {
+	public WakeCloudClient(String token, String refreshToken, Handler handler, AuthenticationAPIClient auth0Client) {
 		this.authIdToken = token;
 		this.UIThreadHandler = handler;
 		this.refreshToken = refreshToken;
+		this.auth0Client = auth0Client;
 	}
 
 	public static abstract class ResponseTask<T> {

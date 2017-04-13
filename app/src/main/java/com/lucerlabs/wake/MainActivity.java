@@ -40,10 +40,12 @@ import com.auth0.android.callback.BaseCallback;
 import com.auth0.android.result.Credentials;
 import com.auth0.android.result.UserProfile;
 import java.util.TimeZone;
+
 import io.particle.android.sdk.devicesetup.ParticleDeviceSetupLibrary;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.games.event.Events;
+import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.crash.FirebaseCrash;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.microsoft.windowsazure.messaging.NotificationHub;
@@ -72,6 +74,7 @@ public class MainActivity extends AppCompatActivity
 	private SharedPreferences mSharedPreferences;
 	private WakeCloudClient wakeCloud;
 	private MediaPlayer mPlayer;
+	private FirebaseAnalytics mFirebaseAnalytics;
 	private BroadcastReceiver mNotificationReceiver = new BroadcastReceiver() {
 		@Override
 		public void onReceive(Context context, Intent intent) {
@@ -115,6 +118,8 @@ public class MainActivity extends AppCompatActivity
 			}
 		});
 
+		mFirebaseAnalytics = mFirebaseAnalytics.getInstance(this);
+
 		Credentials credentials = CredentialsManager.getCredentials(this);
 		if (credentials == null) {
 			doSignOut();
@@ -124,7 +129,9 @@ public class MainActivity extends AppCompatActivity
 			doSignOut();
 		}
 
-		wakeCloud = new WakeCloudClient(this.authIdToken, credentials.getRefreshToken(), new Handler(Looper.getMainLooper()));
+		Auth0 auth0 = new Auth0(getString(R.string.auth0_client_id), getString(R.string.auth0_domain));
+		client = new AuthenticationAPIClient(auth0);
+		wakeCloud = new WakeCloudClient(this.authIdToken, credentials.getRefreshToken(), new Handler(Looper.getMainLooper()), client);
 		setContentView(R.layout.activity_main);
 
 		mainActivity = this;
@@ -153,9 +160,6 @@ public class MainActivity extends AppCompatActivity
 		NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
 		navigationView.setNavigationItemSelectedListener(this);
 		navigationView.setCheckedItem(R.id.nav_alarms);
-
-		Auth0 auth0 = new Auth0(getString(R.string.auth0_client_id), getString(R.string.auth0_domain));
-		client = new AuthenticationAPIClient(auth0);
 
 		final TimePickerDialog.OnTimeSetListener timePickerListener = new TimePickerDialog.OnTimeSetListener() {
 			@Override
@@ -360,6 +364,11 @@ public class MainActivity extends AppCompatActivity
 		if (mCurrentUser.getTimezone() == null || mCurrentUser.getTimezone().isEmpty()){
 			mCurrentUser.setTimezone(TimeZone.getDefault().getID());
 		}
+
+		Bundle params = new Bundle();
+		params.putString("coreId", mCurrentUser.getCoreID());
+		params.putString("userId", Integer.toString((mCurrentUser.getUserID())));
+		mFirebaseAnalytics.logEvent("PrimaryUserRegistration", params);
 
 		mCurrentUser.setIsRegistered(true);
 		mCurrentUser.setIsPrimaryUser(true);
