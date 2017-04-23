@@ -23,6 +23,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
+import android.widget.Spinner;
 import android.widget.TimePicker;
 import android.widget.EditText;
 
@@ -31,6 +32,7 @@ public class AlarmViewModel extends BaseObservable {
 	private CharSequence mFormat12;
 	private Alarm mAlarm;
 	private TimePickerDialog mTimePicker;
+
 	private AlertDialog mLabelEditorDialog;
 	private String mTime;
 	private Boolean mEnabled;
@@ -39,6 +41,7 @@ public class AlarmViewModel extends BaseObservable {
 	private View mAlarmDetails;
 	private LinearLayout mDaysContainer;
 	private String mDurationStatus;
+
 	private final AlarmsFragment.AlarmFragmentListener mAlarmOnChange;
 	private final TimePickerDialog.OnTimeSetListener timePickerListener = new TimePickerDialog.OnTimeSetListener() {
 		@Override
@@ -62,6 +65,7 @@ public class AlarmViewModel extends BaseObservable {
 		initLabelEditorDialog(mContext);
 		mTime = "0:00";
 		mIsExpanded = false;
+
 	}
 
 	public void onTimeClick() {
@@ -148,6 +152,7 @@ public class AlarmViewModel extends BaseObservable {
 		notifyPropertyChanged(com.lucerlabs.wake.BR.durationStatus);
 	}
 
+
 	public static CharSequence get12ModeFormat(float amPmRatio) {
 		String pattern = DateFormat.getBestDateTimePattern(Locale.getDefault(), "hma");
 		if (amPmRatio <= 0) {
@@ -199,6 +204,13 @@ public class AlarmViewModel extends BaseObservable {
 
 	public int getDuration() {
 		return mAlarm.getDuration();
+	}
+
+	public int getAudio(){ return mAlarm.getAudio();}
+
+	public void setAudio(int value){
+		mAlarm.setAudio(value);
+		mAlarmOnChange.postAlarms();
 	}
 
 	@Bindable
@@ -282,4 +294,10 @@ public class AlarmViewModel extends BaseObservable {
 
 		mLabelEditorDialog = dialogBuilder.create();
 	}
+
+	private void initAudioSelectDialog(Context context){
+
+	}
 }
+
+

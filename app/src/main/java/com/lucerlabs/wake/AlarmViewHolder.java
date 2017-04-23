@@ -30,6 +30,65 @@ public class AlarmViewHolder extends RecyclerView.ViewHolder {
 		mAlarmViewModel = new AlarmViewModel(context, changeHandler);
 		mBinding.setAlarm(mAlarmViewModel);
 
+		// Populate audio select spinner and set listeners
+
+		Spinner spinner = mBinding.audioSpinner;
+
+		final ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(context, R.array.audio_array, R.layout.spinner_style);
+
+		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+
+		spinner.setAdapter(adapter);
+
+		spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+			@Override
+			public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+				String track = parent.getItemAtPosition(position).toString();
+
+				int track_num = 0;
+
+				switch (track){
+					case "Groove":
+						track_num = 11;
+						break;
+					case "Move":
+						track_num = 13;
+						break;
+					case "Natural":
+						track_num = 15;
+						break;
+					case "Rise":
+						track_num = 17;
+						break;
+					case "Stroll":
+						track_num = 19;
+						break;
+					case "Sunshine":
+						track_num = 21;
+						break;
+					case "Alert":
+						track_num = 22;
+						break;
+				}
+
+				System.out.println("audio selected: " + track + " (" + track_num + ")");
+
+				mAlarmViewModel.setAudio(track_num);
+
+			}
+
+			@Override
+			public void onNothingSelected(AdapterView<?> parent) {
+
+			}
+		});
+
+
+
+
+
+
+
 		// Where should these initializations live?
 		// Here in the AlarmViewHolder? Or in the AlarmViewModel?
 		int maxDuration = 15;

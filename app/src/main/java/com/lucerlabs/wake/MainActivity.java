@@ -569,6 +569,7 @@ public class MainActivity extends AppCompatActivity
 
 	public void postAlarmsAsync() {
 		wakeCloud.postAlarmsAsync(this.mAlarms);
+		System.out.println("Alarm 0 Audio " + this.mAlarms.get(0).getAudio());
 	}
 
 	public void postNotificationRegistration(final String deviceId) {

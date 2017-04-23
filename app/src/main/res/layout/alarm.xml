@@ -138,10 +138,21 @@
             </LinearLayout>
 
             <TextView
-                android:text="Standard"
+                android:id="@+id/textView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:id="@+id/txtSoundTrack" />
+                android:fontFamily="sans-serif-thin"
+                android:text="Sound Track"
+                android:textColor="@color/clock_white"
+                android:textSize="@dimen/label_font_size" />
+
+            <Spinner
+                android:id="@+id/audio_spinner"
+                style="@style/Widget.AppCompat.Spinner"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingBottom="16dp"
+                android:paddingTop="16dp" />
 
             <ImageButton
                 android:id="@+id/delete_button"
