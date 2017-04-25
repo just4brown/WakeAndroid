@@ -68,6 +68,12 @@ public class AlarmsFragment extends Fragment {
 		mAlarmAdapter = null;
 	}
 
+	public void setFragmentListener(AlarmFragmentListener listener) {
+		if (mListener == null) {
+			mListener = listener;
+		}
+	}
+
 	public interface AlarmFragmentListener {
 		ObservableArrayList<Alarm> getObservableAlarms();
 		void postAlarms();

@@ -13,6 +13,8 @@ import android.text.format.DateFormat;
 import android.text.style.RelativeSizeSpan;
 import android.text.style.StyleSpan;
 import android.text.style.TypefaceSpan;
+
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashSet;
@@ -40,6 +42,7 @@ public class AlarmViewModel extends BaseObservable {
 	private ViewGroup mTransitionContainer;
 	private View mAlarmDetails;
 	private LinearLayout mDaysContainer;
+	private Spinner mAudioTrackSpinner;
 	private String mDurationStatus;
 
 	private final AlarmsFragment.AlarmFragmentListener mAlarmOnChange;
@@ -94,6 +97,10 @@ public class AlarmViewModel extends BaseObservable {
 		mTransitionContainer = view;
 	}
 
+	public void setAudioTrackSpinner(Spinner spinner) {
+		mAudioTrackSpinner = spinner;
+	}
+
 	public void setAlarmDetailsView (View view) {
 		mAlarmDetails = view;
 	}
@@ -104,10 +111,11 @@ public class AlarmViewModel extends BaseObservable {
 
 	public void setAlarm(Alarm alarm) {
 		mAlarm = alarm;
-		notifyChange();
 		updateTime();
 		updateDays();
 		updateDurationStatus();
+		updateAudioTrack();
+		notifyChange();
 	}
 
 	public Alarm getAlarm()  {
@@ -152,6 +160,34 @@ public class AlarmViewModel extends BaseObservable {
 		notifyPropertyChanged(com.lucerlabs.wake.BR.durationStatus);
 	}
 
+	public void updateAudioTrack() {
+		int audioTrack = mAlarm.getAudio();
+		int spinnerIndex = 0;
+		switch (audioTrack) {
+			case 11:
+				spinnerIndex = 0;
+				break;
+			case 13:
+				spinnerIndex = 1;
+				break;
+			case 15:
+				spinnerIndex = 2;
+				break;
+			case 17:
+				spinnerIndex = 3;
+				break;
+			case 19:
+				spinnerIndex = 4;
+				break;
+			case 21:
+				spinnerIndex = 5;
+				break;
+			case 22:
+				spinnerIndex = 6;
+				break;
+		}
+		mAudioTrackSpinner.setSelection(spinnerIndex);
+	}
 
 	public static CharSequence get12ModeFormat(float amPmRatio) {
 		String pattern = DateFormat.getBestDateTimePattern(Locale.getDefault(), "hma");
@@ -240,11 +276,19 @@ public class AlarmViewModel extends BaseObservable {
 		}
 
 		LinearLayout.LayoutParams dayButtonLayoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-		int dayButtonDimension = (int) mContext.getResources().getDimension(R.dimen.touch_target_min_size);
+		int dayButtonDimension = (int) mContext.getResources().getDimension(R.dimen.day_of_week_button_size);
 		dayButtonLayoutParams.width = dayButtonDimension;
 		dayButtonLayoutParams.height = dayButtonDimension;
 
-		List<DayOfWeek> days = Arrays.asList(DayOfWeek.SUNDAY, DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY, DayOfWeek.SATURDAY);
+		List<DayOfWeek> days = new ArrayList<>();
+		days.add(DayOfWeek.SUNDAY);
+		days.add(DayOfWeek.MONDAY);
+		days.add(DayOfWeek.TUESDAY);
+		days.add(DayOfWeek.WEDNESDAY);
+		days.add(DayOfWeek.THURSDAY);
+		days.add(DayOfWeek.FRIDAY);
+		days.add(DayOfWeek.SATURDAY);
+
 		HashSet<DayOfWeek> selectedDays = new HashSet<>(mAlarm.getDays());
 		for (DayOfWeek day : days) {
 			DayOfWeekWidget d = new DayOfWeekWidget(mContext, android.support.design.R.attr.borderlessButtonStyle, day, selectedDays.contains(day));

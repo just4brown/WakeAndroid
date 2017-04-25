@@ -31,23 +31,18 @@ public class AlarmViewHolder extends RecyclerView.ViewHolder {
 		mBinding.setAlarm(mAlarmViewModel);
 
 		// Populate audio select spinner and set listeners
-
-		Spinner spinner = mBinding.audioSpinner;
-
+		Spinner spinner = (Spinner) binding.getRoot().findViewById(R.id.audio_spinner);
 		final ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(context, R.array.audio_array, R.layout.spinner_style);
-
 		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-
 		spinner.setAdapter(adapter);
 
 		spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
 			@Override
 			public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
 				String track = parent.getItemAtPosition(position).toString();
-
 				int track_num = 0;
 
-				switch (track){
+				switch (track) {
 					case "Groove":
 						track_num = 11;
 						break;
@@ -72,9 +67,7 @@ public class AlarmViewHolder extends RecyclerView.ViewHolder {
 				}
 
 				System.out.println("audio selected: " + track + " (" + track_num + ")");
-
 				mAlarmViewModel.setAudio(track_num);
-
 			}
 
 			@Override
@@ -83,11 +76,7 @@ public class AlarmViewHolder extends RecyclerView.ViewHolder {
 			}
 		});
 
-
-
-
-
-
+		mAlarmViewModel.setAudioTrackSpinner(spinner);
 
 		// Where should these initializations live?
 		// Here in the AlarmViewHolder? Or in the AlarmViewModel?

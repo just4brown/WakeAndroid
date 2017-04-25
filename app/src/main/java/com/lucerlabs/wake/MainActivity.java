@@ -185,7 +185,7 @@ public class MainActivity extends AppCompatActivity
 		mAlarms = new ObservableArrayList<Alarm>();
 		mIsOnboarding = false;
 
-		ParticleDeviceSetupLibrary.init(this.getApplicationContext(), MainActivity.class);
+		ParticleDeviceSetupLibrary.init(this.getApplicationContext());
 		mPlayer = new MediaPlayer();
 	}
 
@@ -437,7 +437,9 @@ public class MainActivity extends AppCompatActivity
 			getFragmentManager().beginTransaction().replace(R.id.frame_content, settingsFragment).commit();
 		} else if (id == R.id.nav_alarms) {
 			addAlarmButton.setVisibility(View.VISIBLE);
-			getFragmentManager().beginTransaction().replace(R.id.frame_content, new AlarmsFragment()).commit();
+			AlarmsFragment alarmsFragment = new AlarmsFragment();
+			alarmsFragment.setFragmentListener(this);
+			getFragmentManager().beginTransaction().replace(R.id.frame_content, alarmsFragment).commit();
 		}else if (id == R.id.nav_sign_out) {
 			addAlarmButton.setVisibility(View.INVISIBLE);
 			doSignOut();
@@ -631,7 +633,9 @@ public class MainActivity extends AppCompatActivity
 	private void initAlarmFragment() {
 		mIsOnboarding = false;
 		mDrawerToggle.setDrawerIndicatorEnabled(false);
-		FragmentTransaction newFragmentTransaction = getFragmentManager().beginTransaction().replace(R.id.frame_content, new AlarmsFragment());
+		AlarmsFragment alarmsFragment = new AlarmsFragment();
+		alarmsFragment.setFragmentListener(this);
+		FragmentTransaction newFragmentTransaction = getFragmentManager().beginTransaction().replace(R.id.frame_content, alarmsFragment);
 		addAlarmButton.setVisibility(View.VISIBLE);
 		getFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
 		mDrawerToggle.setDrawerIndicatorEnabled(true);

@@ -124,6 +124,7 @@
 
     <!-- The minimum height/width of any touch target -->
     <dimen name="touch_target_min_size">48dp</dimen>
+    <dimen name="day_of_week_button_size">36dp</dimen>
 
     <!-- Dimens for cities fastscroll -->
     <dimen name="fastscroll_thumb_height">48dp</dimen>

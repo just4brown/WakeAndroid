@@ -55,12 +55,14 @@ public class Alarm {
 		this.minute = minute;
 		this.enabled = enabled;
 		this.isSynchronized = false;
-		this.days = Arrays.asList(DayOfWeek.getDayOfWeek(1));
 		this.audio = 3;
 		this.duration = 5;
 		this.brightness = 9;
 		this.volume = 9;
 		this.allowSnooze = false;
+
+		this.days = new ArrayList<>();
+		this.days.add(DayOfWeek.getDayOfWeek(1));
 	}
 
 	public Boolean getEnabled() {
