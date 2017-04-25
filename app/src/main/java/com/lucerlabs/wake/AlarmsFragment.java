@@ -71,6 +71,7 @@ public class AlarmsFragment extends Fragment {
 	public void setFragmentListener(AlarmFragmentListener listener) {
 		if (mListener == null) {
 			mListener = listener;
+			mAlarmAdapter = new AlarmAdapter(mListener.getObservableAlarms(), mListener);
 		}
 	}
 
