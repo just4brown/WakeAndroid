@@ -3,11 +3,8 @@ package com.lucerlabs.wake;
 import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.app.Activity;
 import android.content.Intent;
-import android.os.Bundle;
 import android.widget.Toast;
-
 import com.auth0.android.Auth0;
 import com.auth0.android.authentication.AuthenticationAPIClient;
 import com.auth0.android.authentication.AuthenticationException;
@@ -20,12 +17,10 @@ import com.auth0.android.lock.LockCallback;
 import com.auth0.android.lock.utils.LockException;
 import com.auth0.android.result.Credentials;
 import com.auth0.android.result.UserProfile;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.android.gms.appindexing.Action;
 import com.google.android.gms.appindexing.AppIndex;
 import com.google.android.gms.appindexing.Thing;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.Scope;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -53,37 +48,34 @@ public class LoginActivity extends AppCompatActivity {
             .withAuthHandlers(handler)
             .build(this);
 
-        if(CredentialsManager.getCredentials(this).getIdToken() == null) {
+        String accessToken = CredentialsManager.getCredentials(this).getAccessToken();
+        if (accessToken == null) {
             startActivity(mLock.newIntent(this));
             return;
         }
 
-        client.tokenInfo(CredentialsManager.getCredentials(this).getIdToken())
+        AuthenticationAPIClient aClient = new AuthenticationAPIClient(auth0);
+        aClient.userInfo(accessToken)
             .start(new BaseCallback<UserProfile, AuthenticationException>() {
                 @Override
                 public void onSuccess(final UserProfile payload) {
-
-                    LoginActivity.this.runOnUiThread(new Runnable() {
+                    runOnUiThread(new Runnable() {
                         public void run() {
                             Toast.makeText(LoginActivity.this, "Automatic Login Success", Toast.LENGTH_SHORT).show();
-
                         }
                     });
-
-                    Intent mainIntent = new Intent(getApplicationContext(), MainActivity.class);
-                    mainIntent.putExtra("user", payload);
-                    startActivity(mainIntent);
+                    startActivity(new Intent(LoginActivity.this, MainActivity.class));
                     finish();
                 }
 
                 @Override
                 public void onFailure(AuthenticationException error) {
-                    LoginActivity.this.runOnUiThread(new Runnable() {
+                    runOnUiThread(new Runnable() {
                         public void run() {
                             Toast.makeText(LoginActivity.this, "Session Expired, please Log In", Toast.LENGTH_SHORT).show();
                         }
                     });
-                    CredentialsManager.deleteCredentials(getApplicationContext());
+                    CredentialsManager.deleteCredentials(LoginActivity.this);
                     startActivity(mLock.newIntent(LoginActivity.this));
                 }
             });

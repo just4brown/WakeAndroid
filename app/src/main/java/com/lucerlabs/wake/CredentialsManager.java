@@ -20,6 +20,7 @@ public class CredentialsManager {
                 .putString(Constants.REFRESH_TOKEN, credentials.getRefreshToken())
                 .putString(Constants.ACCESS_TOKEN, credentials.getAccessToken())
                 .putString(Constants.CREDENTIAL_TYPE, credentials.getType())
+                .putLong(Constants.EXPIRES_IN,credentials.getExpiresIn())
                 .commit();
     }
 
@@ -31,7 +32,8 @@ public class CredentialsManager {
                 sharedPref.getString(Constants.ID_TOKEN, null),
                 sharedPref.getString(Constants.ACCESS_TOKEN, null),
                 sharedPref.getString(Constants.CREDENTIAL_TYPE, null),
-                sharedPref.getString(Constants.REFRESH_TOKEN, null));
+                sharedPref.getString(Constants.REFRESH_TOKEN, null),
+                sharedPref.getLong(Constants.EXPIRES_IN, 0));
 
         return credentials;
     }
@@ -45,6 +47,7 @@ public class CredentialsManager {
                 .putString(Constants.REFRESH_TOKEN, null)
                 .putString(Constants.ACCESS_TOKEN, null)
                 .putString(Constants.CREDENTIAL_TYPE, null)
+                .putLong(Constants.EXPIRES_IN, 0)
                 .commit();
     }
 }

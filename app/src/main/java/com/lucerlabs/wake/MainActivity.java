@@ -193,10 +193,11 @@ public class MainActivity extends AppCompatActivity
 	protected void onPostResume() {
 		super.onPostResume();
 		isVisible = true;
-		registerWithNotificationHubs();
 		if (mCurrentUser == null) {
 			getAuth0UserAysnc();
 			getUserInfoAsync();
+		} else {
+			registerWithNotificationHubs();
 		}
 	}
 
@@ -537,7 +538,7 @@ public class MainActivity extends AppCompatActivity
 	}
 
 	public void getAuth0UserAysnc(){
-		client.tokenInfo(CredentialsManager.getCredentials(this).getIdToken())
+		client.userInfo(CredentialsManager.getCredentials(this).getAccessToken())
 				.start(new BaseCallback<UserProfile, AuthenticationException>() {
 					@Override
 					public void onSuccess(final UserProfile payload) {

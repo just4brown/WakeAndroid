@@ -9,4 +9,5 @@ class Constants {
     final static String ACCESS_TOKEN = "AUTH0_ACCESS_TOKEN";
     final static String ID_TOKEN = "AUTH0_ID_TOKEN";
     final static String CREDENTIAL_TYPE = "AUTH0_CREDENTIAL_TYPE";
+    final static String EXPIRES_IN = "AUTH0_EXPIRES_IN";
 }
