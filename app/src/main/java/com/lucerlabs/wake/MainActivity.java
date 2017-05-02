@@ -517,6 +517,7 @@ public class MainActivity extends AppCompatActivity
 
 				if (user.isRegistered()) {
 					getAlarmsAsync();
+					registerWithNotificationHubs();
 					initAlarmFragment();
 				}
 				else {
