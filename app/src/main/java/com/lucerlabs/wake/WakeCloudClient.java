@@ -60,9 +60,6 @@ public class WakeCloudClient {
 						}
 					});
 				} else if (responseCode == 401) {
-					//auth0Client.renewAuth(refreshToken)
-							//.addParameter("scope", "offline_access")
-
 					auth0Client.delegationWithRefreshToken(refreshToken)
 						.setScope("openid offline_access")
 						.start(new BaseCallback<Delegation, AuthenticationException>() {
