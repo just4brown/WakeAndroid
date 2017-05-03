@@ -46,7 +46,13 @@ public class LoginActivity extends AppCompatActivity {
 
         mLock = Lock.newBuilder(auth0, mCallback)
             .withAuthHandlers(handler)
+            .withScope("offline_access openid")
             .build(this);
+
+//        if(CredentialsManager.getCredentials(this).getIdToken() == null){
+//            startActivity(mLock.newIntent(this));
+//            return;
+//        }
 
         String accessToken = CredentialsManager.getCredentials(this).getAccessToken();
         if (accessToken == null) {
