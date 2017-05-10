@@ -28,12 +28,6 @@
             android:key="timezone_preference"
             android:title="@string/setup_section_timezone"/>
 
-        <Preference
-            android:key="email_preference"
-            android:title="@string/setup_section_emails"
-            android:summary="Not Set"
-            android:dialogTitle="Dialog Title"/>
-
     </PreferenceCategory>
 
     <PreferenceCategory
