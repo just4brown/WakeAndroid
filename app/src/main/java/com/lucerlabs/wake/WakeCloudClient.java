@@ -229,15 +229,28 @@ public class WakeCloudClient {
 
 	public void getAudioTracksAsync(final ResponseTask task) {
 		makeWebRequest(
+				new Request.Builder()
+						.header("Authorization", "bearer " + this.authIdToken)
+						.header("Content-Type","application/json")
+						.url("http://wakeuserapi.azurewebsites.net/v1/alarms/audio")
+						.build(),
+				this.httpClient,
+				task,
+				this.UIThreadHandler,
+				UserDto.class);
+	}
+
+	public void getDeviceStatusAsync(final ResponseTask task) {
+		makeWebRequest(
 			new Request.Builder()
-					.header("Authorization", "bearer " + this.authIdToken)
-					.header("Content-Type","application/json")
-					.url("http://wakeuserapi.azurewebsites.net/v1/alarms/audio")
-					.build(),
+				.header("Authorization", "bearer " + this.authIdToken)
+				.header("Content-Type","application/json")
+				.url("http://wakeuserapi.azurewebsites.net/v1/device/status")
+				.build(),
 			this.httpClient,
 			task,
 			this.UIThreadHandler,
-			UserDto.class);
+			DeviceStatusDto.class);
 	}
 
 	public void generateSecondaryUserAsync(final ResponseTask task) {

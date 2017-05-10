@@ -198,6 +198,7 @@ public class MainActivity extends AppCompatActivity
 			getUserInfoAsync();
 		} else {
 			registerWithNotificationHubs();
+			checkDeviceStatusAsync();
 		}
 	}
 
@@ -619,6 +620,21 @@ public class MainActivity extends AppCompatActivity
 			@Override
 			void onError(int code) {
 				FirebaseCrash.log("generateSecondaryUserCode error: " + code);
+			}
+		});
+	}
+
+	public void checkDeviceStatusAsync() {
+		wakeCloud.getDeviceStatusAsync(new WakeCloudClient.ResponseTask<DeviceStatusDto>() {
+			@Override
+			public void executeTask(DeviceStatusDto deviceStatus) {
+				TextView statusTextView = (TextView ) findViewById(R.id.device_status_text);
+				statusTextView.setText("Wake Device status: " + deviceStatus.getStatus());
+			}
+
+			@Override
+			void onError(int code) {
+				FirebaseCrash.log("checkDeviceStatus error: " + code);
 			}
 		});
 	}

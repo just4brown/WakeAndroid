@@ -44,6 +44,8 @@ public class WakeNotificationHandler extends NotificationsHandler {
 		Intent intent = new Intent(ctx, MainActivity.class);
 		intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 
+		// TODO: only show dismiss button for "alarm going off" notification
+
 		Intent dismissIntent = new Intent(ctx, MainActivity.class);
 		dismissIntent.putExtra("ALARM", "dismiss");
 
