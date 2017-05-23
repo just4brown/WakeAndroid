@@ -23,6 +23,20 @@ public class AlarmsFragment extends Fragment {
 		// Required empty public constructor
 	}
 
+	public static AlarmsFragment newInstance(String nextAlarm, WakeStatus deviceStatus) {
+		AlarmsFragment newFragment = new AlarmsFragment();
+
+		Bundle args = new Bundle();
+		if (nextAlarm != null) {
+			args.putString("nextAlarm", nextAlarm);
+		}
+		if (deviceStatus != null) {
+			args.putString("deviceStatus", deviceStatus.toString());
+		}
+		newFragment.setArguments(args);
+		return newFragment;
+	}
+
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View alarmView = inflater.inflate(R.layout.content_main, container, false);
@@ -45,6 +59,27 @@ public class AlarmsFragment extends Fragment {
 				mListener.runDemo();
 			}
 		});
+
+		Bundle args = getArguments();
+		if (args != null) {
+			String nextAlarm = args.getString("nextAlarm");
+			if (nextAlarm != null) {
+				Button buttonElement = (Button) alarmView.findViewById(R.id.next_alarm_indicator);
+				buttonElement.setText(nextAlarm);
+			}
+
+			final String deviceStatus = args.getString("deviceStatus");
+			if (nextAlarm != null) {
+				Button buttonElement = (Button) alarmView.findViewById(R.id.device_status_text);
+				buttonElement.setText(deviceStatus);
+				buttonElement.setOnClickListener(new View.OnClickListener() {
+					@Override
+					public void onClick(View v) {
+						mListener.showStatusPopup(WakeStatus.valueOf(deviceStatus));
+					}
+				});
+			}
+		}
 
 		return alarmView;
 	}
@@ -80,5 +115,6 @@ public class AlarmsFragment extends Fragment {
 		void postAlarms();
 		void dismissAlarms();
 		void runDemo();
+		void showStatusPopup(WakeStatus status);
 	}
 }

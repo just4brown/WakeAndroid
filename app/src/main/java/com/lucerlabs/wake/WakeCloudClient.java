@@ -245,7 +245,7 @@ public class WakeCloudClient {
 			new Request.Builder()
 				.header("Authorization", "bearer " + this.authIdToken)
 				.header("Content-Type","application/json")
-				.url("http://wakeuserapi.azurewebsites.net/v1/device/status")
+				.url("http://wakeuserapi.azurewebsites.net/v1/devices/status")
 				.build(),
 			this.httpClient,
 			task,

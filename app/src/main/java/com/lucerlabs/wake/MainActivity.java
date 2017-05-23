@@ -29,6 +29,7 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.TimePicker;
@@ -40,13 +41,13 @@ import com.auth0.android.callback.BaseCallback;
 import com.auth0.android.result.Credentials;
 import com.auth0.android.result.UserProfile;
 
-import java.util.Set;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.TimeZone;
-
 import io.particle.android.sdk.devicesetup.ParticleDeviceSetupLibrary;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
-import com.google.android.gms.games.event.Events;
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.crash.FirebaseCrash;
 import com.google.firebase.iid.FirebaseInstanceId;
@@ -72,6 +73,7 @@ public class MainActivity extends AppCompatActivity
 	private UserDto mCurrentUser;
 	private AlertDialog mErrorDialog;
 	private AlertDialog mConfirmationDialog;
+	private AlertDialog mDeviceStatusDialog;
 	private boolean mIsOnboarding;
 	private SharedPreferences mSharedPreferences;
 	private WakeCloudClient wakeCloud;
@@ -88,6 +90,9 @@ public class MainActivity extends AppCompatActivity
 			}
 		}
 	};
+
+	private String nextAlarmString;
+	private WakeStatus lastCheckedStatus;
 
 	// Notification stuff
 	public static MainActivity mainActivity;
@@ -182,11 +187,24 @@ public class MainActivity extends AppCompatActivity
 
 		mErrorDialog = new AlertDialog.Builder(this).create();
 		mConfirmationDialog = buildConfirmationDialog(this);
+		mDeviceStatusDialog = buildStatusDialog(this);
 		mAlarms = new ObservableArrayList<Alarm>();
 		mIsOnboarding = false;
 
 		ParticleDeviceSetupLibrary.init(this.getApplicationContext());
 		mPlayer = new MediaPlayer();
+
+		if (savedInstanceState != null) {
+			String nextAlarm = savedInstanceState.getString("nextAlarm");
+			String deviceStatus = savedInstanceState.getString("deviceStatus");
+			if (nextAlarm != null) {
+				this.nextAlarmString = nextAlarm;
+			}
+			if (deviceStatus != null) {
+				this.lastCheckedStatus = WakeStatus.valueOf(deviceStatus);
+				mDeviceStatusDialog.setMessage(WakeStatus.getWakeStatusMessage(this.lastCheckedStatus, getResources()));
+			}
+		}
 	}
 
 	@Override
@@ -247,6 +265,16 @@ public class MainActivity extends AppCompatActivity
 				this.dismissAlarms();
 			}
 		}
+	}
+
+	@Override
+	public void onSaveInstanceState(Bundle outState) {
+		outState.putString("nextAlarm", this.nextAlarmString);
+		if (this.lastCheckedStatus != null) {
+			outState.putString("deviceStatus", this.lastCheckedStatus.toString());
+		}
+
+		super.onSaveInstanceState(outState);
 	}
 
 	public void ToastNotify(final String notificationMessage) {
@@ -439,7 +467,7 @@ public class MainActivity extends AppCompatActivity
 			getFragmentManager().beginTransaction().replace(R.id.frame_content, settingsFragment).commit();
 		} else if (id == R.id.nav_alarms) {
 			addAlarmButton.setVisibility(View.VISIBLE);
-			AlarmsFragment alarmsFragment = new AlarmsFragment();
+			AlarmsFragment alarmsFragment = AlarmsFragment.newInstance(this.nextAlarmString, this.lastCheckedStatus);
 			alarmsFragment.setFragmentListener(this);
 			getFragmentManager().beginTransaction().replace(R.id.frame_content, alarmsFragment).commit();
 		}else if (id == R.id.nav_sign_out) {
@@ -467,6 +495,12 @@ public class MainActivity extends AppCompatActivity
 	@Override
 	public void runDemo() {
 		getAlarmDemoAsync();
+	}
+
+	@Override
+	public void showStatusPopup(WakeStatus status) {
+		mDeviceStatusDialog.setMessage(WakeStatus.getWakeStatusMessage(status, getResources()));
+		mDeviceStatusDialog.show();
 	}
 
 	@Override
@@ -519,6 +553,7 @@ public class MainActivity extends AppCompatActivity
 				if (user.isRegistered()) {
 					getAlarmsAsync();
 					registerWithNotificationHubs();
+					checkDeviceStatusAsync();
 					initAlarmFragment();
 				}
 				else {
@@ -628,8 +663,50 @@ public class MainActivity extends AppCompatActivity
 		wakeCloud.getDeviceStatusAsync(new WakeCloudClient.ResponseTask<DeviceStatusDto>() {
 			@Override
 			public void executeTask(DeviceStatusDto deviceStatus) {
-				TextView statusTextView = (TextView ) findViewById(R.id.device_status_text);
-				statusTextView.setText("Wake Device status: " + deviceStatus.getStatus());
+
+				Button nextAlarmButton = (Button) findViewById(R.id.next_alarm_indicator);
+				if (nextAlarmButton != null) {
+					String nextAlarm = deviceStatus.getNextAlarm();
+					if (nextAlarm != null) {
+						try {
+							DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+							Date now = new Date();
+							Date dateNextAlarm = dateFormat.parse(nextAlarm);
+							;
+							now.compareTo(dateNextAlarm);
+							long diff = Math.abs(dateNextAlarm.getTime() - now.getTime());
+							double diffHours = Math.ceil(diff / (60 * 60 * 1000));
+							String units = " hours";
+							nextAlarmString = "Next alarm in " + (int) diffHours + units;
+							if (diffHours < 1) {
+								nextAlarmString = "Next alarm in less than 1 hour";
+							}
+							nextAlarmButton.setText(nextAlarmString);
+						} catch (Exception e) {
+							nextAlarmString = "No upcoming alarms";
+							nextAlarmButton.setText(nextAlarmString);
+						}
+					} else {
+						nextAlarmString = "No upcoming alarms";
+						nextAlarmButton.setText(nextAlarmString);
+					}
+				}
+
+
+				Button statusButton = (Button) findViewById(R.id.device_status_text);
+				if (statusButton != null) {
+					String strStatus = deviceStatus.getStatus();
+					WakeStatus status = WakeStatus.parseWakeStatus(strStatus);
+					lastCheckedStatus = status;
+					statusButton.setText(lastCheckedStatus.toString());
+					statusButton.setOnClickListener(new View.OnClickListener() {
+						@Override
+						public void onClick(View v) {
+							mDeviceStatusDialog.setMessage(WakeStatus.getWakeStatusMessage(lastCheckedStatus, getResources()));
+							mDeviceStatusDialog.show();
+						}
+					});
+				}
 			}
 
 			@Override
@@ -651,7 +728,7 @@ public class MainActivity extends AppCompatActivity
 	private void initAlarmFragment() {
 		mIsOnboarding = false;
 		mDrawerToggle.setDrawerIndicatorEnabled(false);
-		AlarmsFragment alarmsFragment = new AlarmsFragment();
+		AlarmsFragment alarmsFragment = AlarmsFragment.newInstance(this.nextAlarmString, this.lastCheckedStatus);
 		alarmsFragment.setFragmentListener(this);
 		FragmentTransaction newFragmentTransaction = getFragmentManager().beginTransaction().replace(R.id.frame_content, alarmsFragment);
 		addAlarmButton.setVisibility(View.VISIBLE);
@@ -684,6 +761,20 @@ public class MainActivity extends AppCompatActivity
 					}
 				})
 			.create();
+	}
+
+	private AlertDialog buildStatusDialog(Context context) {
+		AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(context);
+
+		return dialogBuilder
+				.setTitle(getResources().getString(R.string.wake_device_status_title))
+				.setPositiveButton("Okay",
+						new DialogInterface.OnClickListener() {
+							public void onClick(DialogInterface dialog, int id) {
+								dialog.cancel();
+							}
+						})
+				.create();
 	}
 
 	private static Alarm mapAlarm(AlarmDto alarmDto) {

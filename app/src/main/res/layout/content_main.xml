@@ -9,12 +9,21 @@
     android:id="@+id/main_layout"
     android:orientation="vertical">
 
-    <TextView
+    <Button
         android:id="@+id/device_status_text"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="52dp"
         android:textAlignment="center"
-        android:layout_marginBottom="12dp"/>
+        android:layout_marginBottom="2dp"
+        style="@style/Widget.AppCompat.Button.Colored" />
+
+    <Button
+        android:id="@+id/next_alarm_indicator"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:textAlignment="center"
+        android:layout_marginBottom="2dp"
+        style="@style/Widget.AppCompat.Button.Colored" />
 
     <LinearLayout
         android:orientation="horizontal"
@@ -24,7 +33,7 @@
 
         <Button
             android:layout_width="0dp"
-            android:layout_height="64dp"
+            android:layout_height="52dp"
             android:text="Demo Alarm"
             android:id="@+id/demo_alarms_button"
             android:layout_weight="0.5"
@@ -32,7 +41,7 @@
 
         <Button
             android:layout_width="0dp"
-            android:layout_height="64dp"
+            android:layout_height="52dp"
             android:text="Dismiss Alarm"
             android:drawableLeft="@drawable/ic_alarm_off_black_24dp"
             android:id="@+id/dismiss_alarms_button"

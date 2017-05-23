@@ -27,6 +27,9 @@ public class DeviceStatusDto {
 	@JsonProperty("isReconnecting")
 	private boolean isReconnecting;
 
+	@JsonProperty("nextAlarm")
+	private String nextAlarm;
+
 
 	public DeviceStatusDto() {
 	}
@@ -48,7 +51,8 @@ public class DeviceStatusDto {
 		boolean isPluggedIn,
 		boolean isCharging,
 		boolean isSleeping,
-		boolean isReconnecting) {
+		boolean isReconnecting,
+		String nextAlarm) {
 		this.status = status;
 		this.batteryVoltage = batteryVoltage;
 		this.powerInVoltage = powerInVoltage;
@@ -56,6 +60,7 @@ public class DeviceStatusDto {
 		this.isCharging = isCharging;
 		this.isSleeping = isSleeping;
 		this.isReconnecting = isReconnecting;
+		this.nextAlarm = nextAlarm;
 	}
 
 	/**
@@ -96,6 +101,11 @@ public class DeviceStatusDto {
 	@JsonProperty("isReconnecting")
 	public boolean IsReconnecting() {
 		return this.isReconnecting;
+	}
+
+	@JsonProperty("nextAlarm")
+	public String getNextAlarm() {
+		return this.nextAlarm;
 	}
 }
 
