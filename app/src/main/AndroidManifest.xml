@@ -72,18 +72,7 @@
             android:label="@string/app_name"
             android:launchMode="singleTask"
             android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.Lock.Theme">
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW"/>
-                <category android:name="android.intent.category.DEFAULT"/>
-                <category android:name="android.intent.category.BROWSABLE"/>
-
-                <data
-                    android:host="@string/auth0_domain"
-                    android:pathPrefix="/android/com.lucerlabs.wake/callback"
-                    android:scheme="https"/>
-            </intent-filter>
-        </activity>
+            android:theme="@style/AppTheme.Lock.Theme"/>
         <activity android:name="com.auth0.android.provider.WebAuthActivity"/>
         <activity android:name=".LoginActivity"
             android:screenOrientation="portrait"/>

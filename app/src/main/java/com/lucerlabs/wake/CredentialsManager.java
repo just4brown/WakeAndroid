@@ -11,43 +11,48 @@ import com.auth0.android.result.Credentials;
 
 public class CredentialsManager {
 
-    public static void saveCredentials(Context context, Credentials credentials){
-        SharedPreferences sharedPref = context.getSharedPreferences(
-                context.getString(R.string.auth0_preferences), Context.MODE_PRIVATE);
+    private static final String PREFERENCES_NAME = "auth0";
+    private final static String REFRESH_TOKEN = "refresh_token";
+    private final static String ACCESS_TOKEN = "access_token";
+    private final static String ID_TOKEN = "id_token";
+    private final static String TOKEN_TYPE = "token_type";
+    private final static String EXPIRES_IN = "expires_in";
 
-        sharedPref.edit()
-                .putString(Constants.ID_TOKEN, credentials.getIdToken())
-                .putString(Constants.REFRESH_TOKEN, credentials.getRefreshToken())
-                .putString(Constants.ACCESS_TOKEN, credentials.getAccessToken())
-                .putString(Constants.CREDENTIAL_TYPE, credentials.getType())
-                .putLong(Constants.EXPIRES_IN,credentials.getExpiresIn())
-                .commit();
+    public static void saveCredentials(Context context, Credentials credentials) {
+        SharedPreferences sp = context.getSharedPreferences(
+                PREFERENCES_NAME, Context.MODE_PRIVATE);
+
+        sp.edit()
+                .putString(ID_TOKEN, credentials.getIdToken())
+                .putString(REFRESH_TOKEN, credentials.getRefreshToken())
+                .putString(ACCESS_TOKEN, credentials.getAccessToken())
+                .putString(TOKEN_TYPE, credentials.getType())
+                .putLong(EXPIRES_IN, credentials.getExpiresIn())
+                .apply();
     }
 
-    public static Credentials getCredentials(Context context){
-        SharedPreferences sharedPref = context.getSharedPreferences(
-                context.getString(R.string.auth0_preferences), Context.MODE_PRIVATE);
+    public static Credentials getCredentials(Context context) {
+        SharedPreferences sp = context.getSharedPreferences(
+                PREFERENCES_NAME, Context.MODE_PRIVATE);
 
-        Credentials credentials = new Credentials(
-                sharedPref.getString(Constants.ID_TOKEN, null),
-                sharedPref.getString(Constants.ACCESS_TOKEN, null),
-                sharedPref.getString(Constants.CREDENTIAL_TYPE, null),
-                sharedPref.getString(Constants.REFRESH_TOKEN, null),
-                sharedPref.getLong(Constants.EXPIRES_IN, 0));
-
-        return credentials;
+        return new Credentials(
+                sp.getString(ID_TOKEN, null),
+                sp.getString(ACCESS_TOKEN, null),
+                sp.getString(TOKEN_TYPE, null),
+                sp.getString(REFRESH_TOKEN, null),
+                sp.getLong(EXPIRES_IN, 0));
     }
 
-    public static void deleteCredentials(Context context){
-        SharedPreferences sharedPref = context.getSharedPreferences(
-                context.getString(R.string.auth0_preferences), Context.MODE_PRIVATE);
+    public static void deleteCredentials(Context context) {
+        SharedPreferences sp = context.getSharedPreferences(
+                PREFERENCES_NAME, Context.MODE_PRIVATE);
 
-        sharedPref.edit()
-                .putString(Constants.ID_TOKEN, null)
-                .putString(Constants.REFRESH_TOKEN, null)
-                .putString(Constants.ACCESS_TOKEN, null)
-                .putString(Constants.CREDENTIAL_TYPE, null)
-                .putLong(Constants.EXPIRES_IN, 0)
-                .commit();
+        sp.edit()
+                .putString(ID_TOKEN, null)
+                .putString(REFRESH_TOKEN, null)
+                .putString(ACCESS_TOKEN, null)
+                .putString(TOKEN_TYPE, null)
+                .putLong(EXPIRES_IN, 0)
+                .apply();
     }
 }
