@@ -136,9 +136,7 @@ public class MainActivity extends AppCompatActivity
 			doSignOut();
 		}
 
-		Auth0 auth0 = new Auth0(getString(R.string.com_auth0_client_id), getString(R.string.auth0_domain));
-
-
+		Auth0 auth0 = new Auth0(getString(R.string.auth0_client_id), getString(R.string.auth0_domain));
 		client = new AuthenticationAPIClient(auth0);
 		wakeCloud = new WakeCloudClient(this.authIdToken, credentials.getRefreshToken(), new Handler(Looper.getMainLooper()), client);
 		setContentView(R.layout.activity_main);
