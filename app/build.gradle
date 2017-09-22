@@ -12,6 +12,7 @@ android {
         versionName "1.6"
         vectorDrawables.useSupportLibrary = true
         multiDexEnabled true
+        manifestPlaceholders = [auth0Domain: "@string/com_auth0_domain", auth0Scheme: "https"]
     }
     buildTypes {
         release {
@@ -43,9 +44,6 @@ dependencies {
     compile 'com.fasterxml.jackson.core:jackson-core:2.8.2'
     compile 'com.fasterxml.jackson.core:jackson-databind:2.8.2'
     compile 'com.squareup.okhttp3:okhttp:3.4.1'
-    compile 'com.auth0.android:lock:2.5.0'
-    compile 'com.auth0.android:lock-google:1.1.0'
-    compile 'com.auth0.android:lock-facebook:3.1.0'
     compile 'com.google.android.gms:play-services:10.2.1'
     compile 'com.google.android.gms:play-services-gcm:10.2.1'
     compile 'com.google.firebase:firebase-messaging:10.2.1'
@@ -63,12 +61,19 @@ dependencies {
     compile 'uk.co.chrisjenx:calligraphy:2.2.0'
     compile 'com.segment.analytics.android:analytics:4.2.6'
 
+    compile 'com.auth0.android:auth0:1.10.0'
+
     compile project(':devicesetup-release')
 }
 
 repositories {
     maven {
         url "http://dl.bintray.com/microsoftazuremobile/SDK"
+    }
+    google()
+    maven {
+        url 'https://maven.google.com/'
+        name 'Google'
     }
 }
 
